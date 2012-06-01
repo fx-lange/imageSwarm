@@ -47,6 +47,10 @@ public:
 		bKillSoft = false;
 	}
 
+	//gravity force to additional defined origin
+	//TODO faster(invSQRT)
+	//TODO smaller force, effect = (length/size)*force with size ≃ windowsize
+	//		addOriginForce(force,size)
 	virtual void addOriginForce(float force){
 		float xd = x - origin.x;
 		float yd = y - origin.y;
@@ -75,8 +79,6 @@ public:
 			xf += xd;
 			yf += yd;
 		}
-
-		//TODO Kraft muss mit steigendem Abstand größer werden - nicht andersrum
 	}
 
 	virtual void updatePosition(float timeStep) {
