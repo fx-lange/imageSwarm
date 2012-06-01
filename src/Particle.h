@@ -15,6 +15,8 @@ public:
 	bool bNoForce;
 	bool bKillSoft;
 
+	ofPoint origin; //
+
 
 	SwarmParticle(float _x = 0, float _y = 0, float _xv = 0, float _yv = 0) :
 			ofPoint(_x,_y), xv(_xv), yv(_yv) {
@@ -22,6 +24,7 @@ public:
 		bNoForce = true;
 		alpha = 0;
 		radius = 2;
+		origin.set(_x,_y);
 	}
 
 	virtual ~SwarmParticle(){
@@ -42,6 +45,38 @@ public:
 //			cout << "particle reserved" << endl;
 		}
 		bKillSoft = false;
+	}
+
+	virtual void addOriginForce(float force){
+		float xd = x - origin.x;
+		float yd = y - origin.y;
+		float length = xd * xd + yd * yd;
+		if(length > 0 ){
+//			float xhalf = 0.5f * length;
+//			int lengthi = *(int*) &length;
+//			lengthi = 0x5f3759df - (lengthi >> 1);
+//			length = *(float*) &lengthi;
+//			length *= 1.5f - xhalf * length * length;
+//			xd *= length;
+//			yd *= length;
+//			length *= radius;
+//			length = 1 / length;
+////			length = (1 - length);
+//			length *= force;
+//			xd *= length;
+//			yd *= length;
+
+			length = sqrtf(length);
+			xd /= length;
+			yd /= length;
+			float effect = length * force;
+			xd *= effect;
+			yd *= effect;
+			xf += xd;
+			yf += yd;
+		}
+
+		//TODO Kraft muss mit steigendem Abstand größer werden - nicht andersrum
 	}
 
 	virtual void updatePosition(float timeStep) {

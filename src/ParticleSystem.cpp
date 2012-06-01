@@ -181,8 +181,8 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float radius,
 #endif
 				}
 				if (length > 0 && length < maxrsq) {
-						glVertex2f(targetX, targetY);
-						glVertex2f(curParticle.x, curParticle.y);
+//						glVertex2f(targetX, targetY);
+//						glVertex2f(curParticle.x, curParticle.y);//REVISIT wieso hier malen?
 #ifdef USE_INVSQRT
 					xhalf = 0.5f * length;
 					lengthi = *(int*) &length;
