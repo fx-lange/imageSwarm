@@ -111,30 +111,30 @@ void SwarmParticleSystem::setupForces() {
 
 void SwarmParticleSystem::addRepulsionForce(const ofPoint& p, float radius,
 		float scale) {
-	addRepulsionForce(p.x, p.y, radius, scale);
+	addRepulsionForce(p.x, p.y, p.z, radius, scale);
 }
 
-void SwarmParticleSystem::addRepulsionForce(float x, float y, float radius,
+void SwarmParticleSystem::addRepulsionForce(float x, float y, float z, float radius,
 		float scale) {
-	addForce(x, y, radius, scale);
+	addForce(x, y, z, radius, scale);
 }
 
 void SwarmParticleSystem::addAttractionForce(const ofPoint& p, float radius,
 		float scale) {
-	addAttractionForce(p.x, p.y, radius, scale);
+	addAttractionForce(p.x, p.y, p.z, radius, scale);
 }
 
-void SwarmParticleSystem::addAttractionForce(float x, float y, float radius,
+void SwarmParticleSystem::addAttractionForce(float x, float y, float z, float radius,
 		float scale) {
-	addForce(x, y, radius, -scale);
+	addForce(x, y, z, radius, -scale);
 }
 
 void SwarmParticleSystem::addForce(const ofPoint& p, float radius,
 		float scale) {
-	addForce(p.x, p.y, radius, -scale);
+	addForce(p.x, p.y, p.z, radius, -scale);
 }
 
-void SwarmParticleSystem::addForce(float targetX, float targetY, float radius,
+void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ, float radius,
 		float scale) {
 	float minX = targetX - radius;
 	float minY = targetY - radius;
@@ -154,7 +154,7 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float radius,
 		maxXBin = xBins;
 	if (maxYBin > yBins)
 		maxYBin = yBins;
-	float xd, yd, length, maxrsq;
+	float xd, yd, zd, length, maxrsq;
 #ifdef USE_INVSQRT
 	float xhalf;
 	int lengthi;
@@ -173,7 +173,8 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float radius,
 				}
 				xd = curParticle.x - targetX;
 				yd = curParticle.y - targetY;
-				length = xd * xd + yd * yd;
+				zd = curParticle.z - targetZ;
+				length = xd * xd + yd * yd + zd * zd;
 				if (length > 0 && length < maxrsq * 2) {
 #ifdef DRAW_FORCES
 					glVertex2f(targetX, targetY);
@@ -191,101 +192,21 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float radius,
 					length *= 1.5f - xhalf * length * length;
 					xd *= length;
 					yd *= length;
+					zd *= length;
 					length *= radius;
 					length = 1 / length;
 					length = (1 - length);
 					length *= scale;
 					xd *= length;
 					yd *= length;
-					curParticle.xf += xd;
-					curParticle.yf += yd;
+					zd *= length;
+					curParticle.force.x += xd;
+					curParticle.force.y += yd;
+					curParticle.force.z += zd;
 #else
 					length = sqrtf(length);
 					xd /= length;
 					yd /= length;
-					effect = (1 - (length / radius)) * scale;
-					curParticle.xf += xd * effect;
-					curParticle.yf += yd * effect;
-#endif
-				}
-			}
-		}
-	}
-}
-
-void SwarmParticleSystem::addDirectedForce(float targetX, float targetY, float radius, float scale, const ofVec3f & normDirection) {
-	float minX = targetX - radius;
-	float minY = targetY - radius;
-	float maxX = targetX + radius;
-	float maxY = targetY + radius;
-	if (minX < 0)
-		minX = 0;
-	if (minY < 0)
-		minY = 0;
-	unsigned minXBin = ((unsigned) minX) >> k;
-	unsigned minYBin = ((unsigned) minY) >> k;
-	unsigned maxXBin = ((unsigned) maxX) >> k;
-	unsigned maxYBin = ((unsigned) maxY) >> k;
-	maxXBin++;
-	maxYBin++;
-	if (maxXBin > xBins)
-		maxXBin = xBins;
-	if (maxYBin > yBins)
-		maxYBin = yBins;
-	float xd, yd, length, maxrsq;
-#ifdef USE_INVSQRT
-	float xhalf;
-	int lengthi;
-#else
-	float effect;
-#endif
-	maxrsq = radius * radius;
-	for (int y = minYBin; y < maxYBin; y++) {
-		for (int x = minXBin; x < maxXBin; x++) {
-			vector<SwarmParticle*>& curBin = bins[y * xBins + x];
-			int n = curBin.size();
-			for (int i = 0; i < n; i++) {
-				SwarmParticle& curParticle = *(curBin[i]);
-				xd = curParticle.x - targetX;
-				yd = curParticle.y - targetY;
-				length = xd * xd + yd * yd;
-				if (length > 0 && length < maxrsq * 2) {
-#ifdef DRAW_FORCES
-					glVertex2f(targetX, targetY);
-					glVertex2f(curParticle.x, curParticle.y);
-#endif
-				}
-				if (length > 0 && length < maxrsq) {
-					#ifdef DRAW_FORCES
-						glVertex2f(targetX, targetY);
-						glVertex2f(curParticle.x, curParticle.y);
-					#endif
-#ifdef USE_INVSQRT
-					xhalf = 0.5f * length;
-					lengthi = *(int*) &length;
-					lengthi = 0x5f3759df - (lengthi >> 1);
-					length = *(float*) &lengthi;
-					length *= 1.5f - xhalf * length * length;
-//					xd *= length;
-//					yd *= length;
-//					xd = direction.x / 100;
-//					yd = direction.y / 100;
-					xd = normDirection.x;
-					yd = normDirection.y;
-					length *= radius;
-					length = 1 / length;
-					length = (1 - length);
-					length *= scale;
-					xd *= length;
-					yd *= length;
-					curParticle.xf += xd;
-					curParticle.yf += yd;
-#else
-					length = sqrtf(length);
-//					xd /= length;
-//					yd /= length;
-					xd = 0.1;
-					yd = 0;
 					effect = (1 - (length / radius)) * scale;
 					curParticle.xf += xd * effect;
 					curParticle.yf += yd * effect;

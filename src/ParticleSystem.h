@@ -36,13 +36,12 @@ public:
 
 	void setupForces();
 	void addRepulsionForce(const ofPoint& p, float radius, float scale);
-	void addRepulsionForce(float x, float y, float radius, float scale);
+	void addRepulsionForce(float x, float y, float z, float radius, float scale);
 	void addAttractionForce(const ofPoint& p, float radius,
 			float scale);
-	void addAttractionForce(float x, float y, float radius, float scale);
+	void addAttractionForce(float x, float y, float z, float radius, float scale);
 	void addForce(const  ofPoint& p, float radius, float scale);
-	void addForce(float x, float y, float radius, float scale);
-	void addDirectedForce(float x, float y, float radius, float scale, const ofVec3f & direction);
+	void addForce(float x, float y, float z, float radius, float scale);
 	virtual void update(bool ignoreFree = true);
 
 	virtual void draw(bool circle=false);

@@ -6,8 +6,11 @@
 
 class SwarmParticle : public ofPoint {
 public:
-	float xv, yv;
-	float xf, yf;
+	ofVec3f vel;
+	ofVec3f force;
+
+//	float xv, yv;
+//	float xf, yf;
 
 	float radius;
 	float alpha;
@@ -19,12 +22,13 @@ public:
 
 
 	SwarmParticle(float _x = 0, float _y = 0, float _xv = 0, float _yv = 0) :
-			ofPoint(_x,_y), xv(_xv), yv(_yv) {
+			ofPoint(_x,_y){
 		bFree = true;
 		bNoForce = true;
 		alpha = 0;
 		radius = 2;
 		origin.set(_x,_y);
+		vel.set(_xv,_yv);
 	}
 
 	virtual ~SwarmParticle(){
@@ -51,10 +55,11 @@ public:
 	//TODO faster(invSQRT)
 	//TODO smaller force, effect = (length/size)*force with size ≃ windowsize
 	//		addOriginForce(force,size)
-	virtual void addOriginForce(float force){
+	virtual void addOriginForce(float scale){
 		float xd = x - origin.x;
 		float yd = y - origin.y;
-		float length = xd * xd + yd * yd;
+		float zd = z - 0;
+		float length = xd * xd + yd * yd + zd * zd;
 		if(length > 0 ){
 //			float xhalf = 0.5f * length;
 //			int lengthi = *(int*) &length;
@@ -73,11 +78,14 @@ public:
 			length = sqrtf(length);
 			xd /= length;
 			yd /= length;
-			float effect = length * force;
+			zd /= length;
+			float effect = length * scale;
 			xd *= effect;
 			yd *= effect;
-			xf += xd;
-			yf += yd;
+			zd *= effect;
+			force.x += xd;
+			force.y += yd;
+			force.z += zd;
 		}
 	}
 
@@ -85,54 +93,52 @@ public:
 		if(bFree)
 			return;
 		// f = ma, m = 1, f = a, v = int(a)
-		xv += xf;
-		yv += yf;
-		x += xv * timeStep;
-		y += yv * timeStep;
+		vel += force;
+		x += vel.x * timeStep;
+		y += vel.y * timeStep;
+		z += vel.z * timeStep;
 
 	}
 
 	void resetForce() {
-		xf = 0;
-		yf = 0;
+		force.set(0,0,0);
 	}
 
-	virtual bool bounceOffWalls(float left, float top, float right, float bottom, float damping = .3) {
-		if(bFree){
-			return false;
-		}
-
-		bool collision = false;
-
-		if (x > right) {
-			x = right - 1;
-			xv *= -1;
-			collision = true;
-		} else if (x < left) {
-			x = left + 1;
-			xv *= -1;
-			collision = true;
-		}
-		if (y > bottom) {
-			y = bottom -1;
-			yv *= -1;
-			collision = true;
-		} else if (y < top) {
-			y = top +1;
-			yv *= -1;
-			collision = true;
-		}
-
-		if (collision == true) {
-			xv *= damping;
-			yv *= damping;
-		}
-		return collision;
-	}
+//	virtual bool bounceOffWalls(float left, float top, float right, float bottom, float damping = .3) {
+//		if(bFree){
+//			return false;
+//		}
+//
+//		bool collision = false;
+//
+//		if (x > right) {
+//			x = right - 1;
+//			xv *= -1;
+//			collision = true;
+//		} else if (x < left) {
+//			x = left + 1;
+//			xv *= -1;
+//			collision = true;
+//		}
+//		if (y > bottom) {
+//			y = bottom -1;
+//			yv *= -1;
+//			collision = true;
+//		} else if (y < top) {
+//			y = top +1;
+//			yv *= -1;
+//			collision = true;
+//		}
+//
+//		if (collision == true) {
+//			xv *= damping;
+//			yv *= damping;
+//		}
+//		return collision;
+//	}
 
 	void addDampingForce(float damping = .01) {
-		xf = xf - xv * damping;
-		yf = yf - yv * damping;
+		force = force - vel * damping;
 	}
 
 	virtual void draw(float grey = 255) {
@@ -147,11 +153,10 @@ public:
 		if(bFree){
 			return;
 		}
-//		glPointSize(ofRandom(5));
 		glPointSize(ofRandom(1));
 		glBegin(GL_POINTS);
 		ofSetColor(255,255,255,alpha);
-		glVertex2f(x,y);
+		glVertex3f(x,y,z);
 		glEnd();
 	}
 };
