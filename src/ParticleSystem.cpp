@@ -4,11 +4,11 @@ SwarmParticleSystem::SwarmParticleSystem() :
 		timeStep(1) {
 }
 
-void SwarmParticleSystem::setup(int width, int height, int k) {
+void SwarmParticleSystem::setup(int width, int height, int binPower) {
 	this->width = width;
 	this->height = height;
-	this->k = k;
-	binSize = 1 << k;
+	this->binPower = binPower;
+	binSize = 1 << binPower;
 	xBins = (int) ceilf((float) width / (float) binSize);
 	yBins = (int) ceilf((float) height / (float) binSize);
 	bins.resize(xBins * yBins);
@@ -35,7 +35,7 @@ SwarmParticle& SwarmParticleSystem::operator[](unsigned i) {
 SwarmParticle * SwarmParticleSystem::getNext(){
 	SwarmParticle * p = particles[index];
 	index = (index+1) % (particles.size());
-	while(!p->bFree){
+	while(!p->isFree()){
 		p = particles[index];
 		index = (index+1) % (particles.size());
 	}
@@ -72,18 +72,18 @@ vector<SwarmParticle*> SwarmParticleSystem::getRegion(unsigned minX, unsigned mi
 		unsigned maxX, unsigned maxY) {
 	vector<SwarmParticle*> region;
 	back_insert_iterator<vector<SwarmParticle*> > back = back_inserter(region);
-	unsigned minXBin = minX >> k;
-	unsigned maxXBin = maxX >> k;
-	unsigned minYBin = minY >> k;
-	unsigned maxYBin = maxY >> k;
+	unsigned minXBin = minX >> binPower;
+	unsigned maxXBin = maxX >> binPower;
+	unsigned minYBin = minY >> binPower;
+	unsigned maxYBin = maxY >> binPower;
 	maxXBin++;
 	maxYBin++;
 	if (maxXBin > xBins)
 		maxXBin = xBins;
 	if (maxYBin > yBins)
 		maxYBin = yBins;
-	for (int y = minYBin; y < maxYBin; y++) {
-		for (int x = minXBin; x < maxXBin; x++) {
+	for (unsigned int y = minYBin; y < maxYBin; y++) {
+		for (unsigned int x = minXBin; x < maxXBin; x++) {
 			vector<SwarmParticle*>& cur = bins[y * xBins + x];
 			copy(cur.begin(), cur.end(), back);
 		}
@@ -92,17 +92,16 @@ vector<SwarmParticle*> SwarmParticleSystem::getRegion(unsigned minX, unsigned mi
 }
 
 void SwarmParticleSystem::setupForces() {
-	int n = bins.size();
-	for (int i = 0; i < n; i++) {
+	for (unsigned int i = 0; i < bins.size(); i++) {
 		bins[i].clear();
 	}
-	n = particles.size();
+
 	unsigned xBin, yBin, bin;
-	for (int i = 0; i < n; i++) {
+	for (unsigned int i = 0; i <  particles.size(); i++) {
 		SwarmParticle& cur = *(particles[i]);
 		cur.resetForce();
-		xBin = ((unsigned) cur.x) >> k;
-		yBin = ((unsigned) cur.y) >> k;
+		xBin = ((unsigned) cur.x) >> binPower;
+		yBin = ((unsigned) cur.y) >> binPower;
 		bin = yBin * xBins + xBin;
 		if (xBin < xBins && yBin < yBins)
 			bins[bin].push_back(&cur);
@@ -144,10 +143,10 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ, 
 		minX = 0;
 	if (minY < 0)
 		minY = 0;
-	unsigned minXBin = ((unsigned) minX) >> k;
-	unsigned minYBin = ((unsigned) minY) >> k;
-	unsigned maxXBin = ((unsigned) maxX) >> k;
-	unsigned maxYBin = ((unsigned) maxY) >> k;
+	unsigned minXBin = ((unsigned) minX) >> binPower;
+	unsigned minYBin = ((unsigned) minY) >> binPower;
+	unsigned maxXBin = ((unsigned) maxX) >> binPower;
+	unsigned maxYBin = ((unsigned) maxY) >> binPower;
 	maxXBin++;
 	maxYBin++;
 	if (maxXBin > xBins)
@@ -162,13 +161,13 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ, 
 	float effect;
 #endif
 	maxrsq = radius * radius;
-	for (int y = minYBin; y < maxYBin; y++) {
-		for (int x = minXBin; x < maxXBin; x++) {
+	for (unsigned int y = minYBin; y < maxYBin; y++) {
+		for (unsigned int x = minXBin; x < maxXBin; x++) {
 			vector<SwarmParticle*>& curBin = bins[y * xBins + x];
 			int n = curBin.size();
 			for (int i = 0; i < n; i++) {
 				SwarmParticle& curParticle = *(curBin[i]);
-				if(curParticle.bFree || curParticle.bNoForce){
+				if(curParticle.isFree() || curParticle.ignoresForces()){
 					continue;
 				}
 				xd = curParticle.x - targetX;
@@ -200,9 +199,9 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ, 
 					xd *= length;
 					yd *= length;
 					zd *= length;
-					curParticle.force.x += xd;
-					curParticle.force.y += yd;
-					curParticle.force.z += zd;
+					curParticle.steer.x += xd;
+					curParticle.steer.y += yd;
+					curParticle.steer.z += zd;
 #else
 					length = sqrtf(length);
 					xd /= length;
@@ -219,20 +218,19 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ, 
 
 
 void SwarmParticleSystem::update(bool ignoreFree) {
-	int iFree = 0;
-	int n = particles.size();
-	for (int i = 0; i < n; i++){
+	int iFreeParticles = 0;
+	for (unsigned int i = 0; i < particles.size(); i++){
 		SwarmParticle * p = particles[i];
 		p->updatePosition(timeStep);
-		if(p->bFree){
-			++iFree;
+		if(p->isFree()){
+			++iFreeParticles;
 		}
 	}
-	if(!ignoreFree && iFree < 5000){
+	if(!ignoreFree && iFreeParticles < particles.size() * 0.1){
 		ofLog(OF_LOG_WARNING, "WARNING - PARTICLE LEAK - FREE ALL!");
 		freeAllParticles();
 	}
-	nFree = iFree;
+	nFree = iFreeParticles;
 }
 
 
@@ -251,6 +249,6 @@ void SwarmParticleSystem::freeAllParticles(){
 	int n = particles.size();
 	for (int i = 0; i < n; i++){
 		SwarmParticle * p = particles[i];
-		p->bFree = true;
+		p->setFree(true);
 	}
 }

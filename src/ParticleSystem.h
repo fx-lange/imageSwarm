@@ -12,7 +12,7 @@ protected:
 	float timeStep;
 
 	vector<vector<SwarmParticle*> > bins;
-	int width, height, k, xBins, yBins, binSize;
+	unsigned int width, height, binPower, xBins, yBins, binSize;
 
 public:
 
@@ -20,9 +20,9 @@ public:
 
 	vector<SwarmParticle*> particles;
 	SwarmParticleSystem();
-	~SwarmParticleSystem(){}
+	virtual ~SwarmParticleSystem(){}
 
-	void setup(int width, int height, int k);
+	void setup(int width, int height, int binPower);
 	void setTimeStep(float timeStep);
 
 	void add(SwarmParticle * particle);
@@ -35,6 +35,7 @@ public:
 	SwarmParticle * getNext();
 
 	void setupForces();
+
 	void addRepulsionForce(const ofPoint& p, float radius, float scale);
 	void addRepulsionForce(float x, float y, float z, float radius, float scale);
 	void addAttractionForce(const ofPoint& p, float radius,
@@ -42,6 +43,7 @@ public:
 	void addAttractionForce(float x, float y, float z, float radius, float scale);
 	void addForce(const  ofPoint& p, float radius, float scale);
 	void addForce(float x, float y, float z, float radius, float scale);
+
 	virtual void update(bool ignoreFree = true);
 
 	virtual void draw(bool circle=false);
