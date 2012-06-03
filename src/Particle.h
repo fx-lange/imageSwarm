@@ -72,7 +72,7 @@ public:
 
 protected:
 
-	ofVec2f lookup;
+	ofVec3f lookup;
 
 	bool bFree;
 	bool bIgnoreForce;

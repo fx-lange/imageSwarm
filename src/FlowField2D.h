@@ -1,32 +1,30 @@
-// 3D openFrameworks version of Daniel Shiffman's 2D Flow Field (<http://www.shiffman.net>)
-// by Felix Lange (spta.de)
+// openFrameworks version of Daniel Shiffman's Flow Field (<http://www.shiffman.net>)
 
-
-#ifndef FlowField_H_
-#define FlowField_H_
+#ifndef FlowField2D_H_
+#define FlowField2D_H_
 
 #include "ofMain.h"
 
-class FlowField {
+class FlowField2D {
 protected:
 	// A flow field is a two dimensional array of ofVec3f
-	vector<vector<vector<ofVec3f> > > field;
-	int cols, rows, depth; // Columns and Rows
+	vector<vector<ofVec3f> > field;
+	int cols, rows; // Columns and Rows
 	int resolution; // How large is each "cell" of the flow field
 
 public:
 
 	bool bSetup;
 
-	FlowField() {
+	FlowField2D() {
 		bSetup = false;
 	}
 
-	virtual ~FlowField() {
+	virtual ~FlowField2D() {
 
 	}
 
-	void setup(int width, int height, int depth, int r);
+	void setup(int width, int height, int r);
 
 	void init();
 
@@ -34,13 +32,12 @@ public:
 	void display();
 
 	// Renders a vector object 'v' as an arrow and a location 'x,y'
-	void drawVector(ofVec3f v, float x, float y, float z, float scale);
+	void drawVector(ofVec3f v, float x, float y, float scale);
 
 	ofVec3f & lookup(ofPoint lookup) {
 		int x = constrain(lookup.x / resolution, 0, cols - 1);
 		int y = constrain(lookup.y / resolution, 0, rows - 1);
-		int z = constrain(lookup.z / resolution, 0, depth -1);
-		return field[x][y][z];
+		return field[x][y];
 	}
 
 	inline int constrain(float val, int min, int max) {
@@ -50,4 +47,4 @@ public:
 	}
 };
 
-#endif /* FlowField_H_ */
+#endif /* FlowField2D_H_ */
