@@ -87,6 +87,8 @@ void SwarmParticle::draw(float grey ) {
 	}
 	ofSetColor(grey,grey,grey,alpha);//TODO include z
 	ofCircle(x,y,radius);
+	ofSetColor(255,0,0);
+	ofCircle(lookup,2);
 }
 
 void SwarmParticle::drawVertex(){

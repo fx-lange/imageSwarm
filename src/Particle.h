@@ -6,6 +6,7 @@
 #include "FlowField.h"
 
 class SwarmParticle: public ofPoint {
+
 public:
 	ofVec3f vel;
 	ofVec3f steer;
@@ -42,7 +43,7 @@ public:
 	virtual void follow(FlowField f) {
 
 		// Look ahead
-		ofVec3f lookup = vel;
+		lookup = vel;
 		lookup.normalize();
 		lookup.scale(32); // Arbitrarily look 32 pixels ahead
 		lookup += ofVec3f(x, y, z); //TODO += *this?
@@ -55,6 +56,7 @@ public:
 //	    PVector steer = PVector.sub(desired, vel);
 		desired -= vel;
 //	    desired.limit(maxforce*flowfieldForce);  //TODO Limit to maximum steering force
+		desired *= 0.1; //TODO just temporary
 		steer += desired;
 	}
 
@@ -69,6 +71,8 @@ public:
 	virtual void drawVertex();
 
 protected:
+
+	ofVec2f lookup;
 
 	bool bFree;
 	bool bIgnoreForce;
