@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Particle.h"
+#include "FlowField.h"
 
-//#define DRAW_FORCES
 #define USE_INVSQRT
 
 class SwarmParticleSystem {
