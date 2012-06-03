@@ -31,6 +31,7 @@ public:
 	//TODO faster(invSQRT)
 	//TODO smaller force, effect = (length/size)*force with size ≃ windowsize
 	//		addOriginForce(force,size)
+	//REVISIT same as "arrival"?
 	virtual void addOriginForce(float scale);
 
 	virtual void updatePosition(float timeStep);
