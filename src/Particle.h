@@ -3,8 +3,9 @@
 #include "ofMain.h"
 #include "ofGraphics.h"
 #include "ofPoint.h"
+#include "FlowField.h"
 
-class SwarmParticle : public ofPoint {
+class SwarmParticle: public ofPoint {
 public:
 	ofVec3f vel;
 	ofVec3f steer;
@@ -12,16 +13,18 @@ public:
 
 	float radius;
 	float alpha;
+	float maxSpeed;
 
 	SwarmParticle(float _x = 0, float _y = 0, float _xv = 0, float _yv = 0);
 
-	virtual ~SwarmParticle(){ }
+	virtual ~SwarmParticle() {
+	}
 
-	virtual bool isFree(){
+	virtual bool isFree() {
 		return bFree;
 	}
 
-	virtual bool ignoresForces(){
+	virtual bool ignoresForces() {
 		return bIgnoreForce;
 	}
 
@@ -34,6 +37,27 @@ public:
 	//REVISIT same as "arrival"?
 	virtual void addOriginForce(float scale);
 
+	// Implementing Reynolds' flow field following algorithm
+	// http://www.red3d.com/cwr/steer/FlowFollow.html
+	virtual void follow(FlowField f) {
+
+		// Look ahead
+		ofVec3f lookup = vel;
+		lookup.normalize();
+		lookup.scale(32); // Arbitrarily look 32 pixels ahead
+		lookup += ofVec3f(x, y, z); //TODO += *this?
+
+		// What is the vector at that spot in the flow field?
+		ofVec3f desired = f.lookup(lookup);
+		// Scale it up by maxspeed
+		desired.scale(maxSpeed);
+		// Steering is desired minus velocity
+//	    PVector steer = PVector.sub(desired, vel);
+		desired -= vel;
+//	    desired.limit(maxforce*flowfieldForce);  //TODO Limit to maximum steering force
+		steer += desired;
+	}
+
 	virtual void updatePosition(float timeStep);
 
 	void resetForce();
@@ -43,7 +67,6 @@ public:
 	virtual void draw(float grey = 255);
 
 	virtual void drawVertex();
-
 
 protected:
 

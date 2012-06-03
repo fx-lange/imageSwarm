@@ -28,7 +28,7 @@ void FlowField::init() {
 	}
 
 	// Reseed noise so we get a new flow field every time
-	ofSeedRandom();
+	ofSeedRandom();//TODO not working for noise()!
 	float xoff = 0;
 	for (int i = 0; i < cols; i++) {
 		float yoff = 0;
