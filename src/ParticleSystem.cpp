@@ -236,12 +236,17 @@ void SwarmParticleSystem::update(bool ignoreFree) {
 
 void SwarmParticleSystem::draw(bool circle) {
 	int n = particles.size();
+	if(!circle);
+	glBegin(GL_POINTS);
 	for (int i = 0; i < n; i++){
 		if(circle){
 			particles[i]->draw();
 		}else{
 			particles[i]->drawVertex();
 		}
+	}
+	if(!circle){
+		glEnd();
 	}
 }
 

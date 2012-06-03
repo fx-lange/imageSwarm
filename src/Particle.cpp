@@ -93,9 +93,6 @@ void SwarmParticle::drawVertex(){
 	if(bFree){
 		return;
 	}
-	glPointSize(ofRandom(1));
-	glBegin(GL_POINTS);
 	ofSetColor(255,255,255,alpha);
 	glVertex3f(x,y,z);
-	glEnd();
 }
