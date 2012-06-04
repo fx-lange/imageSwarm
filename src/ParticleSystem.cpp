@@ -199,9 +199,9 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ, 
 					xd *= length;
 					yd *= length;
 					zd *= length;
-					curParticle.steer.x += xd;
-					curParticle.steer.y += yd;
-					curParticle.steer.z += zd;
+					curParticle.acc.x += xd;
+					curParticle.acc.y += yd;
+					curParticle.acc.z += zd;
 #else
 					length = sqrtf(length);
 					xd /= length;
@@ -237,7 +237,7 @@ void SwarmParticleSystem::update(bool ignoreFree) {
 void SwarmParticleSystem::draw(bool circle) {
 	int n = particles.size();
 	if(!circle){
-		glPointSize(5);
+		glPointSize(1);
 		glBegin(GL_POINTS);
 	}
 	for (int i = 0; i < n; i++){

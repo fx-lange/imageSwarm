@@ -8,6 +8,7 @@ SwarmParticle::SwarmParticle(float _x , float _y , float _xv, float _yv ) :
 	radius = 2;
 	origin.set(_x,_y);
 	vel.set(_xv,_yv);
+	state = PARTICLE_FREE;
 }
 
 void SwarmParticle::setFree(bool free){
@@ -29,6 +30,10 @@ void SwarmParticle::setFree(bool free){
 //TODO smaller force, effect = (length/size)*force with size ≃ windowsize
 //		addOriginForce(force,size)
 void SwarmParticle::addOriginForce(float scale){
+	if(state != PARTICLE_ORIGIN){
+		return;
+	}
+
 	float xd = x - origin.x;
 	float yd = y - origin.y;
 	float zd = z - 0;
@@ -48,7 +53,7 @@ void SwarmParticle::addOriginForce(float scale){
 //			xd *= length;
 //			yd *= length;
 
-		length = sqrtf(length);
+		length = sqrtf(length);//TODO performance
 		xd /= length;
 		yd /= length;
 		zd /= length;
@@ -56,9 +61,9 @@ void SwarmParticle::addOriginForce(float scale){
 		xd *= effect;
 		yd *= effect;
 		zd *= effect;
-		steer.x += xd;
-		steer.y += yd;
-		steer.z += zd;
+		acc.x += xd;
+		acc.y += yd;
+		acc.z += zd;
 	}
 }
 
@@ -66,7 +71,7 @@ void SwarmParticle::updatePosition(float timeStep) {
 	if(bFree)
 		return;
 	// f = ma, m = 1, f = a, v = int(a)
-	vel += steer;
+	vel += acc;
 	x += vel.x * timeStep;
 	y += vel.y * timeStep;
 	z += vel.z * timeStep;
@@ -74,11 +79,11 @@ void SwarmParticle::updatePosition(float timeStep) {
 }
 
 void SwarmParticle::resetForce() {
-	steer.set(0,0,0);
+	acc.set(0,0,0);
 }
 
 void SwarmParticle::addDampingForce(float damping) {
-	steer = steer - vel * damping;
+	acc = acc - vel * damping;
 }
 
 void SwarmParticle::draw(float grey ) {

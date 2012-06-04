@@ -5,16 +5,27 @@
 #include "ofPoint.h"
 #include "FlowField.h"
 
+typedef enum{
+	PARTICLE_FREE,
+//	PARTICLE_FLOCKING,
+//	PARTICLE_EXPLODE,
+//	PARTICLE_TARGET,
+//	PARTICLE_REST
+	PARTICLE_ORIGIN
+} particleState;
+
 class SwarmParticle: public ofPoint {
 
 public:
 	ofVec3f vel;
-	ofVec3f steer;
+	ofVec3f acc;
 	ofPoint origin;
 
 	float radius;
 	float alpha;
 	float maxSpeed;
+
+	particleState state;
 
 	SwarmParticle(float _x = 0, float _y = 0, float _xv = 0, float _yv = 0);
 
@@ -57,7 +68,7 @@ public:
 		desired -= vel;
 //	    desired.limit(maxforce*flowfieldForce);  //TODO Limit to maximum steering force
 		desired *= 0.1; //TODO just temporary
-		steer += desired;
+		acc += desired;
 	}
 
 	virtual void updatePosition(float timeStep);
