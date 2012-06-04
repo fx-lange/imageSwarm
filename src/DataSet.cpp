@@ -1,7 +1,6 @@
 #include "DataSet.h"
 
 DataSet::DataSet() {
-
 }
 
 DataSet::~DataSet() {
@@ -33,10 +32,47 @@ int DataSet::loadImage(ofImage image){
 
 void DataSet::pixelsToParticles(SwarmParticleSystem * ps){
 	for(int i=0;i<size();++i){
-		SwarmParticle * swarmPartile = ps->getNext();
+		SwarmParticle * swarmParticle = ps->getNextUnused();
 		PixelData * p = pixels[i];
-		swarmPartile->origin.set(p->x,p->y,0);
-		swarmPartile->state = PARTICLE_ORIGIN;
+		swarmParticle->origin.set(p->x,p->y,0);
+		swarmParticle->state = PARTICLE_ORIGIN;
+		p->particle = swarmParticle;
+	}
+}
+
+void DataSet::setOriginForceActive(bool active){
+	particleState state = PARTICLE_FREE;
+	if(active){
+		state = PARTICLE_ORIGIN;
+	}
+	for(int i=0;i<size();++i){
+		PixelData * p = pixels[i];
+		p->particle->state = state;
+	}
+}
+
+void DataSet::scaleOrigins(float scaleX, float scaleY){
+	for(int i=0;i<size();++i){
+		PixelData * p = pixels[i];
+		p->particle->origin.x *= scaleX;
+		p->particle->origin.y *= scaleY;
+	}
+}
+
+void DataSet::translateOrigins(float transX, float transY){
+	for(int i=0;i<size();++i){
+		PixelData * p = pixels[i];
+		p->particle->origin.x += transX;
+		p->particle->origin.y += transY;
+	}
+}
+
+void DataSet::freeParticles(){
+	for(int i=0;i<size();++i){
+		PixelData * p = pixels[i];
+		p->particle->state = PARTICLE_FREE;
+		p->particle->setUsed(false);
+		p->particle = NULL;
 	}
 }
 

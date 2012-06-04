@@ -9,6 +9,7 @@ SwarmParticle::SwarmParticle(float _x , float _y , float _xv, float _yv ) :
 	origin.set(_x,_y);
 	vel.set(_xv,_yv);
 	state = PARTICLE_FREE;
+	bUsed = false;
 }
 
 void SwarmParticle::setFree(bool free){

@@ -5,6 +5,13 @@
 #include "ofPoint.h"
 #include "FlowField.h"
 
+/** TODO
+ * 3D boundingBox
+ * 3 rules for swarm behaviour
+ * state dependent settings
+ * 		settings setter function
+ */
+
 typedef enum{
 	PARTICLE_FREE,
 //	PARTICLE_FLOCKING,
@@ -36,11 +43,19 @@ public:
 		return bFree;
 	}
 
+	virtual void setFree(bool free);
+
 	virtual bool ignoresForces() {
 		return bIgnoreForce;
 	}
 
-	virtual void setFree(bool free);
+	virtual bool isUsed(){
+		return bUsed;
+	}
+
+	virtual void setUsed(bool val){
+		bUsed = val;
+	}
 
 	//gravity force to additional defined origin
 	//TODO faster(invSQRT)
@@ -88,6 +103,7 @@ protected:
 	bool bFree;
 	bool bIgnoreForce;
 	bool bKillSoft;
+	bool bUsed;
 
 };
 

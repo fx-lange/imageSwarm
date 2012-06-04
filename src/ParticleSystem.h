@@ -32,7 +32,8 @@ public:
 			unsigned maxY);
 	unsigned size() const;
 	SwarmParticle& operator[](unsigned i);
-	SwarmParticle * getNext();
+	SwarmParticle * getNextFree();
+	SwarmParticle * getNextUnused();
 
 	void setupForces();
 

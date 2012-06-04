@@ -4,9 +4,15 @@
 #include "ofMain.h"
 #include "ParticleSystem.h"
 
+/** TODO
+ * dependent behaviour between datasets
+ * size depent particle amount
+ */
+
 struct PixelData{
 	float x,y;
 	ofColor c;
+	SwarmParticle * particle;
 };
 
 class DataSet {
@@ -26,6 +32,12 @@ public:
 	int loadImage(ofImage image);
 
 	void pixelsToParticles(SwarmParticleSystem * ps);
+
+	void setOriginForceActive(bool active);
+	void scaleOrigins(float scaleX, float scaleY);
+	void translateOrigins(float transX, float transY);
+
+	void freeParticles();
 };
 
 #endif /* DATASET_H_ */

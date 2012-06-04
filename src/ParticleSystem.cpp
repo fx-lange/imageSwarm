@@ -32,7 +32,7 @@ SwarmParticle& SwarmParticleSystem::operator[](unsigned i) {
 	return (*p);
 }
 
-SwarmParticle * SwarmParticleSystem::getNext(){
+SwarmParticle * SwarmParticleSystem::getNextFree(){
 	SwarmParticle * p = particles[index];
 	index = (index+1) % (particles.size());
 	while(!p->isFree()){
@@ -40,6 +40,20 @@ SwarmParticle * SwarmParticleSystem::getNext(){
 		index = (index+1) % (particles.size());
 	}
 	p->setFree(false);
+	return p;
+}
+
+SwarmParticle * SwarmParticleSystem::getNextUnused(){
+	SwarmParticle * p = particles[index];
+	index = (index+1) % (particles.size());
+	while(p->isUsed()){//TODO only not free unused?
+		p = particles[index];
+		index = (index+1) % (particles.size());
+	}
+	p->setUsed(true);
+	if(p->isFree()){
+		p->setFree(false);
+	}
 	return p;
 }
 
