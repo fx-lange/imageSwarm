@@ -1,27 +1,27 @@
 #include "Particle.h"
 
-SwarmParticle::SwarmParticle(float _x , float _y , float _xv, float _yv ) :
-		ofPoint(_x,_y){
+SwarmParticle::SwarmParticle(float _x, float _y, float _xv, float _yv) :
+		ofPoint(_x, _y) {
 	bFree = true;
 	bIgnoreForce = true;
 	alpha = 0;
 	radius = 2;
-	origin.set(_x,_y);
-	vel.set(_xv,_yv);
+	origin.set(_x, _y);
+	vel.set(_xv, _yv);
 	state = PARTICLE_FREE;
 	bUsed = false;
 }
 
-void SwarmParticle::setFree(bool free){
+void SwarmParticle::setFree(bool free) {
 	bFree = free;
-	if(bFree){
+	if (bFree) {
 		alpha = 0;
-		z=0;
+		z = 0;
 		bIgnoreForce = true;
-	}else{
+	} else {
 		bIgnoreForce = false;
 		alpha = 255;
-		z=0;
+		z = 0;
 	}
 	bKillSoft = false;
 }
@@ -30,8 +30,8 @@ void SwarmParticle::setFree(bool free){
 //TODO faster(invSQRT)
 //TODO smaller force, effect = (length/size)*force with size ≃ windowsize
 //		addOriginForce(force,size)
-void SwarmParticle::addOriginForce(float scale){
-	if(state != PARTICLE_ORIGIN){
+void SwarmParticle::addOriginForce(float scale) {
+	if (state != PARTICLE_ORIGIN) {
 		return;
 	}
 
@@ -39,7 +39,7 @@ void SwarmParticle::addOriginForce(float scale){
 	float yd = y - origin.y;
 	float zd = z - 0;
 	float length = xd * xd + yd * yd + zd * zd;
-	if(length > 0 ){
+	if (length > 0) {
 //			float xhalf = 0.5f * length;
 //			int lengthi = *(int*) &length;
 //			lengthi = 0x5f3759df - (lengthi >> 1);
@@ -54,7 +54,7 @@ void SwarmParticle::addOriginForce(float scale){
 //			xd *= length;
 //			yd *= length;
 
-		length = sqrtf(length);//TODO performance
+		length = sqrtf(length); //TODO performance
 		xd /= length;
 		yd /= length;
 		zd /= length;
@@ -69,7 +69,7 @@ void SwarmParticle::addOriginForce(float scale){
 }
 
 void SwarmParticle::updatePosition(float timeStep) {
-	if(bFree)
+	if (bFree)
 		return;
 	// f = ma, m = 1, f = a, v = int(a)
 	vel += acc;
@@ -80,7 +80,7 @@ void SwarmParticle::updatePosition(float timeStep) {
 }
 
 void SwarmParticle::resetForce() {
-	acc.set(0,0,0);
+	acc.set(0, 0, 0);
 }
 
 void SwarmParticle::addDampingForce(float damping) {
@@ -109,20 +109,147 @@ void SwarmParticle::follow(FlowField f) {
 	acc += desired;
 }
 
-void SwarmParticle::draw(float grey ) {
-	if(bFree){
-		return;
-	}
-	ofSetColor(grey,grey,grey,alpha);//TODO include z
-	ofSphere(x,y,z,radius);
-	ofSetColor(255,0,0);
-	ofSphere(lookup,2);//TODO debug
+//We accumulate a new acceleration each time based on three rules
+void SwarmParticle::flock(vector<SwarmParticle*> boids) {
+	ofVec3f sep = separate(boids); // Separation
+	ofVec3f ali = align(boids); // Alignment
+	ofVec3f coh = cohesion(boids); // Cohesion
+
+	// Arbitrarily weight these forces
+	float scatter = ofRandom(0.2);
+	sep *= (separatorForce + scatter);
+	ali *= (alignForce + scatter);
+	coh *= (cohesionForce + scatter);
+
+	// Add the force vectors to acceleration
+	acc += sep;
 }
 
-void SwarmParticle::drawVertex(){
-	if(bFree){
+// Separation
+// Method checks for nearby boids and steers away
+ofVec3f SwarmParticle::separate(vector<SwarmParticle*> & boids) {
+	float desiredseparation = 20.0; //TODO GUI
+	ofVec3f steer(0, 0, 0);
+	int count = 0;
+	// For every boid in the system, check if it's too close
+	for (int i = 0; i < boids.size(); i++) {
+		ofVec3f * other = boids[i];
+		float d = this->distance(*other);
+		// If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+		if ((d > 0) && (d < desiredseparation)) {
+			// Calculate vector pointing away from neighbor
+//				ofVec3f diff = PVector.sub(loc, other.loc);
+			ofVec3f diff = *this - *other;
+			diff.normalize();
+			diff /= d; // Weight by distance
+			steer += diff;
+			count++; // Keep track of how many
+		}
+	}
+	// Average -- divide by how many
+	if (count > 0) {
+		steer /= (float) count;
+	}
+
+	// As long as the vector is greater than 0
+	if (steer.length() > 0) {
+		// Implement Reynolds: Steering = Desired - Velocity
+		steer.normalize();
+		steer *= maxSpeed;
+		steer -= vel;
+//			steer.limit(maxforce); //TODO
+	}
+	return steer;
+}
+
+// Alignment
+// For every nearby boid in the system, calculate the average velocity
+ofVec3f SwarmParticle::align(vector<SwarmParticle*> & boids) {
+	float neighbordist = 25.0; //TODO gui
+	ofVec3f steer(0, 0, 0);
+	int count = 0;
+	for (int i = 0; i < boids.size(); i++) {
+		SwarmParticle * other = boids[i];
+		float d = this->distance(*other);
+		if ((d > 0) && (d < neighbordist)) {
+			steer += other->vel;
+			count++;
+		}
+	}
+	if (count > 0) {
+		steer /= (float) count;
+	}
+
+	// As long as the vector is greater than 0
+	if (steer.length() > 0) {
+		// Implement Reynolds: Steering = Desired - Velocity
+		steer.normalize();
+		steer *= maxSpeed;
+		steer -= vel;
+//	      steer.limit(maxforce); //TODO
+	}
+	return steer;
+}
+
+// Cohesion
+// For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
+ofVec3f SwarmParticle::cohesion(vector<SwarmParticle *> & boids) {
+	float neighbordist = 25.0;
+	ofVec3f sum(0, 0, 0); // Start with empty vector to accumulate all locations
+	int count = 0;
+	for (int i = 0; i < boids.size(); i++) {
+		SwarmParticle * other = boids[i];
+		float d = this->distance(*other);
+		if ((d > 0) && (d < neighbordist)) {
+			sum += *other; // Add location
+			count++;
+		}
+	}
+	if (count > 0) {
+		sum /= (float) count;
+		return steer(sum, false); // Steer towards the location
+	}
+	return sum;
+}
+
+// A method that calculates a steering vector towards a target
+// Takes a second argument, if true, it slows down as it approaches the target
+ofVec3f SwarmParticle::steer(ofVec3f target, bool slowdown) {
+	ofVec3f steer; // The steering vector
+	ofVec3f desired = target - *this; // A vector pointing from the location to the target
+	float d = desired.length(); // Distance from the target is the magnitude of the vector
+	// If the distance is greater than 0, calc steering (otherwise return zero vector)
+	if (d > 0) {
+		// Normalize desired
+		desired.normalize();
+		// Two options for desired vector magnitude (1 -- based on distance, 2 -- maxspeed)
+		if ((slowdown) && (d < 100.0))
+			desired *= (maxSpeed * (d / 100.0)); // This damping is somewhat arbitrary
+		else
+			desired *= maxSpeed;
+		// Steering = Desired minus PVectorVelocity
+		steer = desired - vel;
+//			steer.limit(maxforce); //TODO Limit to maximum steering force
+	} else {
+		steer.set(0, 0, 0);
+	}
+	return steer;
+}
+
+void SwarmParticle::draw(float grey) {
+	if (bFree) {
 		return;
 	}
-	ofSetColor(255,255,255,alpha);
-	glVertex3f(x,y,z);
+	ofSetColor(grey, grey, grey, alpha); //TODO include z
+	ofSphere(x, y, z, radius);
+	ofSetColor(255, 0, 0);
+	ofSphere(lookup, 2); //TODO debug
+}
+
+void SwarmParticle::drawVertex() {
+	if (bFree) {
+		return;
+	}
+	ofSetColor(255, 255, 255, alpha);
+	glVertex3f(x, y, z);
 }
