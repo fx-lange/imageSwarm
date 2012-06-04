@@ -87,6 +87,28 @@ void SwarmParticle::addDampingForce(float damping) {
 	acc = acc - vel * damping;
 }
 
+// Implementing Reynolds' flow field following algorithm
+// http://www.red3d.com/cwr/steer/FlowFollow.html
+void SwarmParticle::follow(FlowField f) {
+
+	// Look ahead
+	lookup = vel;
+	lookup.normalize();
+	lookup.scale(32); // Arbitrarily look 32 pixels ahead
+	lookup += ofVec3f(x, y, z); //TODO += *this?
+
+	// What is the vector at that spot in the flow field?
+	ofVec3f desired = f.lookup(lookup);
+	// Scale it up by maxspeed
+	desired.scale(maxSpeed);
+	// Steering is desired minus velocity
+//	    PVector steer = PVector.sub(desired, vel);
+	desired -= vel;
+//	    desired.limit(maxforce*flowfieldForce);  //TODO Limit to maximum steering force
+	desired *= 0.1; //TODO just temporary
+	acc += desired;
+}
+
 void SwarmParticle::draw(float grey ) {
 	if(bFree){
 		return;
