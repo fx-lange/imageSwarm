@@ -29,7 +29,7 @@ public:
 		return pixels.size();
 	}
 
-	int loadImage(ofImage image);
+	int loadImage(ofImage image, int stepSize, bool white = false);
 
 	void pixelsToParticles(SwarmParticleSystem * ps);
 

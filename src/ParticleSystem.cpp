@@ -251,7 +251,7 @@ void SwarmParticleSystem::update(bool ignoreFree) {
 void SwarmParticleSystem::draw(bool circle) {
 	int n = particles.size();
 	if(!circle){
-		glPointSize(1);
+//		glPointSize(1);
 		glBegin(GL_POINTS);
 	}
 	for (int i = 0; i < n; i++){
