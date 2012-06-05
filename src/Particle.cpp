@@ -54,7 +54,7 @@ void SwarmParticle::addOriginForce(float scale) {
 //			xd *= length;
 //			yd *= length;
 
-		length = sqrtf(length); //TODO performance
+		length = sqrtf(length); //TODO performance - use fastNormalize - compare with ParticleSystem::addForce
 		xd /= length;
 		yd /= length;
 		zd /= length;
@@ -136,13 +136,13 @@ ofVec3f SwarmParticle::separate(vector<SwarmParticle*> & boids) {
 	// For every boid in the system, check if it's too close
 	for (int i = 0; i < boids.size(); i++) {
 		ofVec3f * other = boids[i];
-		float d = this->distance(*other);
+		float d = fastDist(*this,*other);
 		// If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
 		if ((d > 0) && (d < desiredseparation)) {
 			// Calculate vector pointing away from neighbor
 //				ofVec3f diff = PVector.sub(loc, other.loc);
 			ofVec3f diff = *this - *other;
-			diff.normalize();
+			fastNormalize(diff);
 			diff /= d; // Weight by distance
 			steer += diff;
 			count++; // Keep track of how many
@@ -154,9 +154,10 @@ ofVec3f SwarmParticle::separate(vector<SwarmParticle*> & boids) {
 	}
 
 	// As long as the vector is greater than 0
-	if (steer.length() > 0) {
+	float steerLength = fastLength(steer);
+	if (steerLength > 0) {
 		// Implement Reynolds: Steering = Desired - Velocity
-		steer.normalize();
+		fastNormalize(steer,steerLength);
 		steer *= maxSpeed;
 		steer -= vel;
 		fastLimit(steer,maxForce);
@@ -172,7 +173,7 @@ ofVec3f SwarmParticle::align(vector<SwarmParticle*> & boids) {
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++) {
 		SwarmParticle * other = boids[i];
-		float d = this->distance(*other);
+		float d =fastDist(*this,*other);
 		if ((d > 0) && (d < neighbordist)) {
 			steer += other->vel;
 			count++;
@@ -183,12 +184,13 @@ ofVec3f SwarmParticle::align(vector<SwarmParticle*> & boids) {
 	}
 
 	// As long as the vector is greater than 0
-	if (steer.length() > 0) {
+	float steerLength = fastLength(steer);
+	if (steerLength > 0) {
 		// Implement Reynolds: Steering = Desired - Velocity
-		steer.normalize();
+		fastNormalize(steer,steerLength);
 		steer *= maxSpeed;
 		steer -= vel;
-//	      steer.limit(maxforce); //TODO
+		fastLimit(steer,maxForce);
 	}
 	return steer;
 }
@@ -196,12 +198,12 @@ ofVec3f SwarmParticle::align(vector<SwarmParticle*> & boids) {
 // Cohesion
 // For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
 ofVec3f SwarmParticle::cohesion(vector<SwarmParticle *> & boids) {
-	float neighbordist = 50.0;
+	float neighbordist = 50.0; //TODO GUI
 	cohesionSum.set(0, 0, 0); // Start with empty vector to accumulate all locations
 	int count = 0;
 	for (unsigned int i = 0; i < boids.size(); i++) {
 		SwarmParticle * other = boids[i];
-		float d = this->distance(*other);
+		float d = fastDist(*this,*other);
 		if ((d > 0) && (d < neighbordist)) {
 			cohesionSum += *other; // Add location
 			count++;
@@ -219,11 +221,11 @@ ofVec3f SwarmParticle::cohesion(vector<SwarmParticle *> & boids) {
 ofVec3f SwarmParticle::steer(ofVec3f target, bool slowdown) {
 	ofVec3f steer; // The steering vector
 	ofVec3f desired = target - *this; // A vector pointing from the location to the target
-	float d = desired.length(); // Distance from the target is the magnitude of the vector
+	float d = fastLength(desired); // Distance from the target is the magnitude of the vector
 	// If the distance is greater than 0, calc steering (otherwise return zero vector)
 	if (d > 0) {
 		// Normalize desired
-		desired.normalize();
+		fastNormalize(desired,d);
 		// Two options for desired vector magnitude (1 -- based on distance, 2 -- maxspeed)
 		if ((slowdown) && (d < 100.0))
 			desired *= (maxSpeed * (d / 100.0)); // This damping is somewhat arbitrary
@@ -231,7 +233,7 @@ ofVec3f SwarmParticle::steer(ofVec3f target, bool slowdown) {
 			desired *= maxSpeed;
 		// Steering = Desired minus PVectorVelocity
 		steer = desired - vel;
-//			steer.limit(maxforce); //TODO Limit to maximum steering force
+		fastLimit(steer,maxForce); //TODO Limit to maximum steering force
 	} else {
 		steer.set(0, 0, 0);
 	}
