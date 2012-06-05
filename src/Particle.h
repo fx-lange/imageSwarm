@@ -18,6 +18,63 @@
  * 		distance()
  * steer vs addOriginForce?!
  */
+inline float fastInvSqrt(float x) {
+	float xhalf = 0.5f * x;
+	int i = *(int*) &x; // store floating-point bits in integer
+	i = 0x5f3759d5 - (i >> 1); // initial guess for Newton's method
+	x = *(float*) &i; // convert new bits into float
+	x = x * (1.5f - xhalf * x * x); // One round of Newton's method
+	return x;
+}
+
+inline float fastInvLength(ofVec3f & vec) {
+	return fastInvSqrt(vec.lengthSquared());
+}
+
+inline float fastLength(ofVec3f & vec) {
+	return 1/fastInvLength(vec);
+}
+
+inline float fastDist(ofVec3f & target, ofVec3f & loc) {
+	ofVec3f vec = target - loc;
+	return fastLength(vec);
+}
+
+inline void fastNormalize(ofVec3f & vec, float preCalcLength = -1){
+	if(preCalcLength == -1){//not precalulated
+		vec *= fastInvLength(vec);
+	}else{
+		vec /= preCalcLength;
+	}
+}
+
+inline void fastLimit(ofVec3f & vec, float limit, float preCalcLength = -1){
+	float length;
+	if(preCalcLength == -1){//not precalculated
+		length = fastLength(vec);
+	}else{
+		length = preCalcLength;
+	}
+
+	if(length > limit){
+		vec /= length;
+		vec *= limit;
+	}
+}
+
+inline void printFunctionTestResults(){
+	cout << "function tests:" << endl;
+	float square = 16;
+	cout << "root of "<< square <<" = " << 1/fastInvSqrt(square) << endl;
+	ofVec3f vec(4,4,4);
+	cout << "compare length: " << vec.length() << " with " << fastLength(vec) << endl;
+	ofVec3f vec2(2,2,0);
+	cout << "compare distane: " << vec.distance(vec2) << " with " << fastDist(vec,vec2) << endl;
+	fastNormalize(vec);
+	cout << "test normalize - " << "length after normalize: " << fastLength(vec) << endl;
+	fastLimit(vec2,0.2);
+	cout << "test limit - " << "length after limit to 0.2: " << fastLength(vec2) << endl;
+}
 
 typedef enum {
 	PARTICLE_FREE,
@@ -38,6 +95,7 @@ public:
 	float radius;
 	float alpha;
 	float maxSpeed;
+	float maxForce;
 
 	float separatorForce;
 	float alignForce;
@@ -121,6 +179,8 @@ public:
 protected:
 
 	ofVec3f lookup;
+	ofVec3f cohesionSum;
+	ofVec3f cohesionSteer;
 
 	bool bFree;
 	bool bIgnoreForce;
@@ -128,12 +188,3 @@ protected:
 	bool bUsed;
 
 };
-
-inline float InvSqrt(float x) {
-	float xhalf = 0.5f * x;
-	int i = *(int*) &x; // store floating-point bits in integer
-	i = 0x5f3759d5 - (i >> 1); // initial guess for Newton's method
-	x = *(float*) &i; // convert new bits into float
-	x = x * (1.5f - xhalf * x * x); // One round of Newton's method
-	return x;
-}

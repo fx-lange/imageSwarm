@@ -113,16 +113,18 @@ void SwarmParticle::follow(FlowField f) {
 void SwarmParticle::flock(vector<SwarmParticle*> boids) {
 	ofVec3f sep = separate(boids); // Separation
 	ofVec3f ali = align(boids); // Alignment
-	ofVec3f coh = cohesion(boids); // Cohesion
+	cohesionSteer = cohesion(boids); // Cohesion
 
 	// Arbitrarily weight these forces
-	float scatter = ofRandom(0.2);
+	float scatter = ofRandom(0.0);
 	sep *= (separatorForce + scatter);
 	ali *= (alignForce + scatter);
-	coh *= (cohesionForce + scatter);
+	cohesionSteer *= (cohesionForce + scatter);
 
 	// Add the force vectors to acceleration
 	acc += sep;
+	acc += ali;
+	acc += cohesionSteer;
 }
 
 // Separation
@@ -157,7 +159,7 @@ ofVec3f SwarmParticle::separate(vector<SwarmParticle*> & boids) {
 		steer.normalize();
 		steer *= maxSpeed;
 		steer -= vel;
-//			steer.limit(maxforce); //TODO
+		fastLimit(steer,maxForce);
 	}
 	return steer;
 }
@@ -194,22 +196,22 @@ ofVec3f SwarmParticle::align(vector<SwarmParticle*> & boids) {
 // Cohesion
 // For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
 ofVec3f SwarmParticle::cohesion(vector<SwarmParticle *> & boids) {
-	float neighbordist = 25.0;
-	ofVec3f sum(0, 0, 0); // Start with empty vector to accumulate all locations
+	float neighbordist = 50.0;
+	cohesionSum.set(0, 0, 0); // Start with empty vector to accumulate all locations
 	int count = 0;
-	for (int i = 0; i < boids.size(); i++) {
+	for (unsigned int i = 0; i < boids.size(); i++) {
 		SwarmParticle * other = boids[i];
 		float d = this->distance(*other);
 		if ((d > 0) && (d < neighbordist)) {
-			sum += *other; // Add location
+			cohesionSum += *other; // Add location
 			count++;
 		}
 	}
 	if (count > 0) {
-		sum /= (float) count;
-		return steer(sum, false); // Steer towards the location
+		cohesionSum /= (float) count;
+		return steer(cohesionSum, false); // Steer towards the location
 	}
-	return sum;
+	return cohesionSum;
 }
 
 // A method that calculates a steering vector towards a target
@@ -241,9 +243,14 @@ void SwarmParticle::draw(float grey) {
 		return;
 	}
 	ofSetColor(grey, grey, grey, alpha); //TODO include z
-	ofSphere(x, y, z, radius);
-	ofSetColor(255, 0, 0);
-	ofSphere(lookup, 2); //TODO debug
+	ofCircle(x, y, z, radius);
+//	ofSetColor(255, 0, 0);
+////	ofCircle(lookup, 2); //TODO debug
+//	ofLine(*this,cohesionSum);
+//	ofCircle(cohesionSum,3);
+//
+//	ofSetColor(0,0,255);
+//	ofLine(*this,*this+cohesionSteer);
 }
 
 void SwarmParticle::drawVertex() {
