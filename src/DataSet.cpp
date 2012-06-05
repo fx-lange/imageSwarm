@@ -59,18 +59,19 @@ void DataSet::scaleOrigins(float scaleX, float scaleY) {
 	}
 }
 
-void DataSet::translateOrigins(float transX, float transY) {
+void DataSet::translateOrigins(float transX, float transY, float transZ) {
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
 		p->particle->origin.x += transX;
 		p->particle->origin.y += transY;
+		p->particle->origin.z += transZ;
 	}
 }
 
 void DataSet::freeParticles() {
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
-		p->particle->state = PARTICLE_FREE;
+		p->particle->state = PARTICLE_ZLAYER;
 		p->particle->setUsed(false);
 		p->particle = NULL;
 	}

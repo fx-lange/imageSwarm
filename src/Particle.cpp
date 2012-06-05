@@ -16,12 +16,12 @@ void SwarmParticle::setFree(bool free) {
 	bFree = free;
 	if (bFree) {
 		alpha = 0;
-		z = 0;
+//		z = 0;
 		bIgnoreForce = true;
 	} else {
 		bIgnoreForce = false;
 		alpha = 255;
-		z = 0;
+//		z = 0;
 	}
 	bKillSoft = false;
 }
@@ -31,14 +31,19 @@ void SwarmParticle::setFree(bool free) {
 //TODO smaller force, effect = (length/size)*force with size ≃ windowsize
 //		addOriginForce(force,size)
 void SwarmParticle::addOriginForce(float scale) {
-	if (state != PARTICLE_ORIGIN) {
+	if (state != PARTICLE_ORIGIN && state != PARTICLE_ZLAYER ) {
 		return;
 	}
 
 	float xd = x - origin.x;
 	float yd = y - origin.y;
-	float zd = z - 0;
-	float length = xd * xd + yd * yd + zd * zd;
+	float zd = z - origin.z;
+	float length = 0;
+	if(state == PARTICLE_ORIGIN){
+		length = xd * xd + yd * yd + zd * zd;
+	}else if(state == PARTICLE_ZLAYER){
+		length = zd * zd;
+	}
 	if (length > 0) {
 //			float xhalf = 0.5f * length;
 //			int lengthi = *(int*) &length;
@@ -58,13 +63,20 @@ void SwarmParticle::addOriginForce(float scale) {
 		xd /= length;
 		yd /= length;
 		zd /= length;
-		float effect = length * scale;
-		xd *= effect;
-		yd *= effect;
-		zd *= effect;
-		acc.x += xd;
-		acc.y += yd;
-		acc.z += zd;
+
+		if(state == PARTICLE_ORIGIN){
+			float effect = length * scale;
+			xd *= effect;
+			yd *= effect;
+			zd *= effect;
+			acc.x += xd;
+			acc.y += yd;
+			acc.z += zd;
+		}else if(state == PARTICLE_ZLAYER){
+			float effect = length * zForce;
+			zd *= effect;
+			acc.z += zd;
+		}
 	}
 }
 
@@ -110,7 +122,9 @@ void SwarmParticle::follow(FlowField f) {
 }
 
 //We accumulate a new acceleration each time based on three rules
-void SwarmParticle::flock(vector<SwarmParticle*> boids) {
+void SwarmParticle::flock(vector<SwarmParticle*> & boids) {
+	if(isFree())
+		return;
 	ofVec3f sep = separate(boids); // Separation
 	ofVec3f ali = align(boids); // Alignment
 	cohesionSteer = cohesion(boids); // Cohesion
@@ -135,6 +149,8 @@ ofVec3f SwarmParticle::separate(vector<SwarmParticle*> & boids) {
 	int count = 0;
 	// For every boid in the system, check if it's too close
 	for (int i = 0; i < boids.size(); i++) {
+		if(boids[i]->isFree())
+			continue;
 		ofVec3f * other = boids[i];
 		float d = fastDist(*this,*other);
 		// If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
@@ -172,6 +188,8 @@ ofVec3f SwarmParticle::align(vector<SwarmParticle*> & boids) {
 	ofVec3f steer(0, 0, 0);
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++) {
+		if(boids[i]->isFree())
+				continue;
 		SwarmParticle * other = boids[i];
 		float d =fastDist(*this,*other);
 		if ((d > 0) && (d < neighbordist)) {
@@ -202,6 +220,8 @@ ofVec3f SwarmParticle::cohesion(vector<SwarmParticle *> & boids) {
 	cohesionSum.set(0, 0, 0); // Start with empty vector to accumulate all locations
 	int count = 0;
 	for (unsigned int i = 0; i < boids.size(); i++) {
+		if(boids[i]->isFree())
+				continue;
 		SwarmParticle * other = boids[i];
 		float d = fastDist(*this,*other);
 		if ((d > 0) && (d < neighbordist)) {

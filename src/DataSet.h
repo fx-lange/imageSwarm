@@ -35,7 +35,7 @@ public:
 
 	void setOriginForceActive(bool active);
 	void scaleOrigins(float scaleX, float scaleY);
-	void translateOrigins(float transX, float transY);
+	void translateOrigins(float transX, float transY, float transZ);
 
 	void freeParticles();
 };

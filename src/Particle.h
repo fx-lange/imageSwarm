@@ -82,7 +82,9 @@ typedef enum {
 //	PARTICLE_EXPLODE,
 //	PARTICLE_TARGET,
 //	PARTICLE_REST
-	PARTICLE_ORIGIN
+	PARTICLE_ORIGIN,
+	PARTICLE_ZLAYER
+
 } particleState;
 
 class SwarmParticle: public ofPoint {
@@ -100,6 +102,7 @@ public:
 	float separatorForce;
 	float alignForce;
 	float cohesionForce;
+	float zForce;
 
 	particleState state;
 
@@ -138,7 +141,7 @@ public:
 	virtual void follow(FlowField f);
 
 	//We accumulate a new acceleration each time based on three rules
-	void flock(vector<SwarmParticle*> boids);
+	void flock(vector<SwarmParticle*> & boids);
 
 	// Separation
 	// Method checks for nearby boids and steers away
@@ -158,12 +161,20 @@ public:
 
 	// Wraparound
 	  void borders(float minX,float minY,float maxX, float maxY, float minZ, float maxZ) {
-	    if (x < minX) x = maxX;
-	    if (y < minY) y = maxY;
-	    if (x > maxX) x = minX;
-	    if (y > maxY) y = minY;
-	    if (z < minZ) vel.z *= -1;
-	    if (z > maxZ) vel.z *= -1;
+		if( x < minX || x > maxX)
+			vel.x *= -1;
+		if( y < minY || y > maxY)
+			vel.y *= -1;
+		if( z < minZ || z > maxZ)
+			vel.z *= -1;
+//	    if (x < minX) x = maxX;
+//	    if (y < minY) y = maxY;
+//	    if (x > maxX) x = minX;
+//	    if (y > maxY) y = minY;
+////	    if (z < minZ) vel.z *= -1;
+////	    if (z > maxZ) vel.z *= -1;
+//		if (z < minZ) z = maxZ;
+//		if (z > maxZ) z = minZ;
 	  }
 
 	virtual void updatePosition(float timeStep);
