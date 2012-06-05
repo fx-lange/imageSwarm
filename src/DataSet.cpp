@@ -6,7 +6,14 @@ DataSet::DataSet() {
 DataSet::~DataSet() {
 }
 
-int DataSet::loadImage(ofImage image, int stepSize, bool white) {
+int DataSet::loadImage(string filename,int stepSize,bool white){
+	ofImage image;
+	image.loadImage(filename);
+	image.setImageType(OF_IMAGE_GRAYSCALE);
+	return loadImage(image,stepSize,white);
+}
+
+int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 	int width = image.getWidth();
 	int height = image.getHeight();
 	loaded = 0;
@@ -30,7 +37,7 @@ int DataSet::loadImage(ofImage image, int stepSize, bool white) {
 	return loaded;
 }
 
-void DataSet::pixelsToParticles(SwarmParticleSystem * ps) {
+int DataSet::pixelsToParticles(SwarmParticleSystem * ps) {
 	for (int i = 0; i < size(); ++i) {
 		SwarmParticle * swarmParticle = ps->getNextUnused();
 		PixelData * p = pixels[i];
@@ -38,6 +45,7 @@ void DataSet::pixelsToParticles(SwarmParticleSystem * ps) {
 		swarmParticle->state = PARTICLE_ORIGIN;
 		p->particle = swarmParticle;
 	}
+	return size();
 }
 
 void DataSet::setOriginForceActive(bool active) {
@@ -68,12 +76,13 @@ void DataSet::translateOrigins(float transX, float transY, float transZ) {
 	}
 }
 
-void DataSet::freeParticles() {
+int DataSet::freeParticles() {
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
 		p->particle->state = PARTICLE_ZLAYER;
 		p->particle->setUsed(false);
 		p->particle = NULL;
 	}
+	return size();
 }
 

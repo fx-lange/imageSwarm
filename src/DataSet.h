@@ -29,15 +29,16 @@ public:
 		return pixels.size();
 	}
 
-	int loadImage(ofImage image, int stepSize, bool white = false);
+	int loadImage(string filename, int stepSize, bool white = false);
+	int loadImage(ofImage & image, int stepSize, bool white = false);
 
-	void pixelsToParticles(SwarmParticleSystem * ps);
+	int pixelsToParticles(SwarmParticleSystem * ps);
 
 	void setOriginForceActive(bool active);
 	void scaleOrigins(float scaleX, float scaleY);
 	void translateOrigins(float transX, float transY, float transZ);
 
-	void freeParticles();
+	int freeParticles();
 };
 
 #endif /* DATASET_H_ */
