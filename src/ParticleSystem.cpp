@@ -32,37 +32,38 @@ SwarmParticle& SwarmParticleSystem::operator[](unsigned i) {
 	return (*p);
 }
 
-SwarmParticle * SwarmParticleSystem::getNextFree(){
+SwarmParticle * SwarmParticleSystem::getNextFree() {
 	SwarmParticle * p = particles[index];
-	index = (index+1) % (particles.size());
-	while(!p->isFree()){
+	index = (index + 1) % (particles.size());
+	while (!p->isFree()) {
 		p = particles[index];
-		index = (index+1) % (particles.size());
+		index = (index + 1) % (particles.size());
 	}
 	p->setFree(false);
 	return p;
 }
 
-SwarmParticle * SwarmParticleSystem::getNextUnused(){
+SwarmParticle * SwarmParticleSystem::getNextUnused() {
 	SwarmParticle * p = particles[index];
-	index = (index+1) % (particles.size());
-	while(p->isUsed()){//TODO only not free unused?
+	index = (index + 1) % (particles.size());
+	while (p->isUsed()) { //TODO only not free unused?
 		p = particles[index];
-		index = (index+1) % (particles.size());
+		index = (index + 1) % (particles.size());
 	}
 	p->setUsed(true);
-	if(p->isFree()){
+	if (p->isFree()) {
 		p->setFree(false);
 	}
 	return p;
 }
 
-vector<SwarmParticle*> SwarmParticleSystem::getNeighbors(SwarmParticle& particle,
-		float radius) {
+vector<SwarmParticle*> SwarmParticleSystem::getNeighbors(
+		SwarmParticle& particle, float radius) {
 	return getNeighbors(particle.x, particle.y, radius);
 }
 
-vector<SwarmParticle*> SwarmParticleSystem::getNeighbors(float x, float y, float radius) {
+vector<SwarmParticle*> SwarmParticleSystem::getNeighbors(float x, float y,
+		float radius) {
 	vector<SwarmParticle*> region = getRegion((int) (x - radius),
 	(int) (y - radius),
 	(int) (x + radius),
@@ -82,10 +83,11 @@ vector<SwarmParticle*> SwarmParticleSystem::getNeighbors(float x, float y, float
 	return neighbors;
 }
 
-vector<SwarmParticle*> SwarmParticleSystem::getRegion(unsigned minX, unsigned minY,
-		unsigned maxX, unsigned maxY) {
+vector<SwarmParticle*> SwarmParticleSystem::getRegion(unsigned minX,
+		unsigned minY, unsigned maxX, unsigned maxY) {
 	vector<SwarmParticle*> region;
-	back_insert_iterator<vector<SwarmParticle*> > back = back_inserter(region);
+	back_insert_iterator < vector<SwarmParticle*> > back = back_inserter(
+			region);
 	unsigned minXBin = minX >> binPower;
 	unsigned maxXBin = maxX >> binPower;
 	unsigned minYBin = minY >> binPower;
@@ -111,7 +113,7 @@ void SwarmParticleSystem::setupForces() {
 	}
 
 	unsigned xBin, yBin, bin;
-	for (unsigned int i = 0; i <  particles.size(); i++) {
+	for (unsigned int i = 0; i < particles.size(); i++) {
 		SwarmParticle& cur = *(particles[i]);
 		cur.resetForce();
 		xBin = ((unsigned) cur.x) >> binPower;
@@ -127,8 +129,8 @@ void SwarmParticleSystem::addRepulsionForce(const ofPoint& p, float radius,
 	addRepulsionForce(p.x, p.y, p.z, radius, scale);
 }
 
-void SwarmParticleSystem::addRepulsionForce(float x, float y, float z, float radius,
-		float scale) {
+void SwarmParticleSystem::addRepulsionForce(float x, float y, float z,
+		float radius, float scale) {
 	addForce(x, y, z, radius, scale);
 }
 
@@ -137,8 +139,8 @@ void SwarmParticleSystem::addAttractionForce(const ofPoint& p, float radius,
 	addAttractionForce(p.x, p.y, p.z, radius, scale);
 }
 
-void SwarmParticleSystem::addAttractionForce(float x, float y, float z, float radius,
-		float scale) {
+void SwarmParticleSystem::addAttractionForce(float x, float y, float z,
+		float radius, float scale) {
 	addForce(x, y, z, radius, -scale);
 }
 
@@ -147,8 +149,8 @@ void SwarmParticleSystem::addForce(const ofPoint& p, float radius,
 	addForce(p.x, p.y, p.z, radius, -scale);
 }
 
-void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ, float radius,
-		float scale) {
+void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ,
+		float radius, float scale) {
 	float minX = targetX - radius;
 	float minY = targetY - radius;
 	float maxX = targetX + radius;
@@ -181,7 +183,7 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ, 
 			int n = curBin.size();
 			for (int i = 0; i < n; i++) {
 				SwarmParticle& curParticle = *(curBin[i]);
-				if(curParticle.isFree() || curParticle.ignoresForces()){
+				if (curParticle.isFree() || curParticle.ignoresForces()) {
 					continue;
 				}
 				xd = curParticle.x - targetX;
@@ -230,45 +232,43 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ, 
 	}
 }
 
-
 void SwarmParticleSystem::update(bool ignoreFree) {
 	int iFreeParticles = 0;
-	for (unsigned int i = 0; i < particles.size(); i++){
+	for (unsigned int i = 0; i < particles.size(); i++) {
 		SwarmParticle * p = particles[i];
 		p->updatePosition(timeStep);
-		if(p->isFree()){
+		if (p->isFree()) {
 			++iFreeParticles;
 		}
 	}
-	if(!ignoreFree && iFreeParticles < particles.size() * 0.1){
+	if (!ignoreFree && iFreeParticles < particles.size() * 0.1) {
 		ofLog(OF_LOG_WARNING, "WARNING - PARTICLE LEAK - FREE ALL!");
 		freeAllParticles();
 	}
 	nFree = iFreeParticles;
 }
 
-
 void SwarmParticleSystem::draw(bool circle) {
 	int n = particles.size();
-	if(!circle){
+	if (!circle) {
 //		glPointSize(1);
 		glBegin(GL_POINTS);
 	}
-	for (int i = 0; i < n; i++){
-		if(circle){
+	for (int i = 0; i < n; i++) {
+		if (circle) {
 			particles[i]->draw();
-		}else{
+		} else {
 			particles[i]->drawVertex();
 		}
 	}
-	if(!circle){
+	if (!circle) {
 		glEnd();
 	}
 }
 
-void SwarmParticleSystem::freeAllParticles(){
+void SwarmParticleSystem::freeAllParticles() {
 	int n = particles.size();
-	for (int i = 0; i < n; i++){
+	for (int i = 0; i < n; i++) {
 		SwarmParticle * p = particles[i];
 		p->setFree(true);
 	}

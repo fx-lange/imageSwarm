@@ -6,12 +6,12 @@ DataSet::DataSet() {
 DataSet::~DataSet() {
 }
 
-int DataSet::loadImage(string filename,int stepSize,bool white){
+int DataSet::loadImage(string filename, int stepSize, bool white) {
 	ofImage image;
 	image.loadImage(filename);
 	image.setImageType(OF_IMAGE_COLOR);
 	used = false;
-	return loadImage(image,stepSize,white);
+	return loadImage(image, stepSize, white);
 }
 
 int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
@@ -20,7 +20,7 @@ int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 
 	loaded = 0;
 
-	float minX,minY,maxX,maxY;
+	float minX, minY, maxX, maxY;
 	minX = width;
 	minY = height;
 	maxX = 0;
@@ -38,18 +38,18 @@ int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 				pixels.push_back(p);
 				++loaded;
 
-				if(x > maxX)
+				if (x > maxX)
 					maxX = x;
-				if(x < minX)
+				if (x < minX)
 					minX = x;
-				if(y > maxY)
+				if (y > maxY)
 					maxY = y;
-				if(y < minY)
+				if (y < minY)
 					minY = y;
 			}
 		}
 	}
-	boundingBox.set(minX,minY,maxX-minX,maxY-minY);
+	boundingBox.set(minX, minY, maxX - minX, maxY - minY);
 	return loaded;
 }
 
@@ -67,9 +67,9 @@ int DataSet::pixelsToParticles(SwarmParticleSystem * ps) {
 }
 
 void DataSet::setOriginForceActive(bool active) {
-	if(!used){
-			return;
-		}
+	if (!used) {
+		return;
+	}
 	particleState state = PARTICLE_FREE;
 	if (active) {
 		state = PARTICLE_ORIGIN;
@@ -81,9 +81,9 @@ void DataSet::setOriginForceActive(bool active) {
 }
 
 void DataSet::scaleOrigins(float scaleX, float scaleY) {
-	if(!used){
-			return;
-		}
+	if (!used) {
+		return;
+	}
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
 		p->particle->origin.x *= scaleX;
@@ -94,7 +94,7 @@ void DataSet::scaleOrigins(float scaleX, float scaleY) {
 }
 
 void DataSet::translateOrigins(float transX, float transY, float transZ) {
-	if(!used){
+	if (!used) {
 		return;
 	}
 	for (int i = 0; i < size(); ++i) {
@@ -107,21 +107,24 @@ void DataSet::translateOrigins(float transX, float transY, float transZ) {
 	boundingBox.y += transY;
 }
 
-void DataSet::moveOriginsBBSize(DataSet & other, float leftright, float updown, float offSetX, float offSetY){
-	if(!used){
+void DataSet::moveOriginsBBSize(DataSet & other, float leftright, float updown,
+		float offSetX, float offSetY) {
+	if (!used) {
 		return;
 	}
-	float transX = leftright * other.boundingBox.width + ofSign(leftright) * offSetX;
+	float transX = leftright * other.boundingBox.width
+			+ ofSign(leftright) * offSetX;
 	float transY = updown * other.boundingBox.height + ofSign(updown) * offSetY;
 	cout << "translate: " << transX << " / " << transY << endl;
-	translateOrigins(transX,transY);
+	translateOrigins(transX, transY);
 }
 
-void DataSet::scaleOriginsFromCenter(float scaleX,float scaleY){
-	if(!used){
+void DataSet::scaleOriginsFromCenter(float scaleX, float scaleY) {
+	if (!used) {
 		return;
 	}
-	ofPoint center(boundingBox.width/2+boundingBox.x,boundingBox.height/2+boundingBox.y);
+	ofPoint center(boundingBox.width / 2 + boundingBox.x,
+			boundingBox.height / 2 + boundingBox.y);
 	ofVec3f diff;
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
@@ -133,7 +136,7 @@ void DataSet::scaleOriginsFromCenter(float scaleX,float scaleY){
 	}
 
 	//scale boundingbox from center
-	diff = center - ofVec3f(boundingBox.x,boundingBox.y);
+	diff = center - ofVec3f(boundingBox.x, boundingBox.y);
 	diff.x *= scaleX;
 	diff.y *= scaleY;
 	boundingBox.x = center.x + diff.x;
@@ -143,7 +146,7 @@ void DataSet::scaleOriginsFromCenter(float scaleX,float scaleY){
 }
 
 int DataSet::freeParticles() {
-	if(!used){
+	if (!used) {
 		return 0;
 	}
 	for (int i = 0; i < size(); ++i) {

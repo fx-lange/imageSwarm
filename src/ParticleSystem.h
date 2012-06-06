@@ -16,11 +16,12 @@ protected:
 public:
 	int index;
 
-    int nFree;
+	int nFree;
 
 	vector<SwarmParticle*> particles;
 	SwarmParticleSystem();
-	virtual ~SwarmParticleSystem(){}
+	virtual ~SwarmParticleSystem() {
+	}
 
 	void setup(int width, int height, int binPower);
 	void setTimeStep(float timeStep);
@@ -28,8 +29,8 @@ public:
 	void add(SwarmParticle * particle);
 	vector<SwarmParticle*> getNeighbors(SwarmParticle& particle, float radius);
 	vector<SwarmParticle*> getNeighbors(float x, float y, float radius);
-	vector<SwarmParticle*> getRegion(unsigned minX, unsigned minY, unsigned maxX,
-			unsigned maxY);
+	vector<SwarmParticle*> getRegion(unsigned minX, unsigned minY,
+			unsigned maxX, unsigned maxY);
 	unsigned size() const;
 	SwarmParticle& operator[](unsigned i);
 	SwarmParticle * getNextFree();
@@ -38,16 +39,17 @@ public:
 	void setupForces();
 
 	void addRepulsionForce(const ofPoint& p, float radius, float scale);
-	void addRepulsionForce(float x, float y, float z, float radius, float scale);
-	void addAttractionForce(const ofPoint& p, float radius,
+	void addRepulsionForce(float x, float y, float z, float radius,
 			float scale);
-	void addAttractionForce(float x, float y, float z, float radius, float scale);
-	void addForce(const  ofPoint& p, float radius, float scale);
+	void addAttractionForce(const ofPoint& p, float radius, float scale);
+	void addAttractionForce(float x, float y, float z, float radius,
+			float scale);
+	void addForce(const ofPoint& p, float radius, float scale);
 	void addForce(float x, float y, float z, float radius, float scale);
 
 	virtual void update(bool ignoreFree = true);
 
-	virtual void draw(bool circle=false);
+	virtual void draw(bool circle = false);
 
 	void freeAllParticles();
 };

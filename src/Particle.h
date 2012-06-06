@@ -32,7 +32,7 @@ inline float fastInvLength(ofVec3f & vec) {
 }
 
 inline float fastLength(ofVec3f & vec) {
-	return 1/fastInvLength(vec);
+	return 1 / fastInvLength(vec);
 }
 
 inline float fastDist(ofVec3f & target, ofVec3f & loc) {
@@ -40,40 +40,44 @@ inline float fastDist(ofVec3f & target, ofVec3f & loc) {
 	return fastLength(vec);
 }
 
-inline void fastNormalize(ofVec3f & vec, float preCalcLength = -1){
-	if(preCalcLength == -1){//not precalulated
+inline void fastNormalize(ofVec3f & vec, float preCalcLength = -1) {
+	if (preCalcLength == -1) { //not precalulated
 		vec *= fastInvLength(vec);
-	}else{
+	} else {
 		vec /= preCalcLength;
 	}
 }
 
-inline void fastLimit(ofVec3f & vec, float limit, float preCalcLength = -1){
+inline void fastLimit(ofVec3f & vec, float limit, float preCalcLength = -1) {
 	float length;
-	if(preCalcLength == -1){//not precalculated
+	if (preCalcLength == -1) { //not precalculated
 		length = fastLength(vec);
-	}else{
+	} else {
 		length = preCalcLength;
 	}
 
-	if(length > limit){
+	if (length > limit) {
 		vec /= length;
 		vec *= limit;
 	}
 }
 
-inline void printFunctionTestResults(){
+inline void printFunctionTestResults() {
 	cout << "function tests:" << endl;
 	float square = 16;
-	cout << "root of "<< square <<" = " << 1/fastInvSqrt(square) << endl;
-	ofVec3f vec(4,4,4);
-	cout << "compare length: " << vec.length() << " with " << fastLength(vec) << endl;
-	ofVec3f vec2(2,2,0);
-	cout << "compare distane: " << vec.distance(vec2) << " with " << fastDist(vec,vec2) << endl;
+	cout << "root of " << square << " = " << 1 / fastInvSqrt(square) << endl;
+	ofVec3f vec(4, 4, 4);
+	cout << "compare length: " << vec.length() << " with " << fastLength(vec)
+			<< endl;
+	ofVec3f vec2(2, 2, 0);
+	cout << "compare distane: " << vec.distance(vec2) << " with "
+			<< fastDist(vec, vec2) << endl;
 	fastNormalize(vec);
-	cout << "test normalize - " << "length after normalize: " << fastLength(vec) << endl;
-	fastLimit(vec2,0.2);
-	cout << "test limit - " << "length after limit to 0.2: " << fastLength(vec2) << endl;
+	cout << "test normalize - " << "length after normalize: " << fastLength(vec)
+			<< endl;
+	fastLimit(vec2, 0.2);
+	cout << "test limit - " << "length after limit to 0.2: " << fastLength(vec2)
+			<< endl;
 }
 
 typedef enum {
@@ -163,15 +167,16 @@ public:
 
 	// A method that calculates a steering vector towards a target
 	// Takes a second argument, if true, it slows down as it approaches the target
-	ofVec3f steer(ofVec3f target, bool slowdown) ;
+	ofVec3f steer(ofVec3f target, bool slowdown);
 
 	// Wraparound
-	  void borders(float minX,float minY,float maxX, float maxY, float minZ, float maxZ) {
-		if( x < minX || x > maxX)
+	void borders(float minX, float minY, float maxX, float maxY, float minZ,
+			float maxZ) {
+		if (x < minX || x > maxX)
 			vel.x *= -1;
-		if( y < minY || y > maxY)
+		if (y < minY || y > maxY)
 			vel.y *= -1;
-		if( z < minZ || z > maxZ)
+		if (z < minZ || z > maxZ)
 			vel.z *= -1;
 //	    if (x < minX) x = maxX;
 //	    if (y < minY) y = maxY;
@@ -181,7 +186,7 @@ public:
 ////	    if (z > maxZ) vel.z *= -1;
 //		if (z < minZ) z = maxZ;
 //		if (z > maxZ) z = minZ;
-	  }
+	}
 
 	virtual void updatePosition(float timeStep);
 
