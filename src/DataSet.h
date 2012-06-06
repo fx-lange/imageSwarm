@@ -17,6 +17,7 @@ struct PixelData{
 
 class DataSet {
 protected:
+	ofRectangle boundingBox;
 	vector<PixelData*> pixels;
 	int loaded;
 
@@ -36,7 +37,9 @@ public:
 
 	void setOriginForceActive(bool active);
 	void scaleOrigins(float scaleX, float scaleY);
-	void translateOrigins(float transX, float transY, float transZ);
+	void translateOrigins(float transX, float transY, float transZ = 0);
+	void moveOriginsBBSize(float leftright, float updown, float offSetX = 0, float offSetY = 0);
+	void scaleOriginsFromCenter(float scaleX,float scaleY);
 
 	int freeParticles();
 };

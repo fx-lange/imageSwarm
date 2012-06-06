@@ -16,6 +16,7 @@ int DataSet::loadImage(string filename,int stepSize,bool white){
 int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 	int width = image.getWidth();
 	int height = image.getHeight();
+	boundingBox.set(0,0,width,height);
 	loaded = 0;
 
 	float scaleImage = 2.f;
@@ -65,6 +66,8 @@ void DataSet::scaleOrigins(float scaleX, float scaleY) {
 		p->particle->origin.x *= scaleX;
 		p->particle->origin.y *= scaleY;
 	}
+	boundingBox.width *= scaleX;
+	boundingBox.height *= scaleY;
 }
 
 void DataSet::translateOrigins(float transX, float transY, float transZ) {
@@ -74,6 +77,36 @@ void DataSet::translateOrigins(float transX, float transY, float transZ) {
 		p->particle->origin.y += transY;
 		p->particle->origin.z += transZ;
 	}
+	boundingBox.x += transX;
+	boundingBox.y += transY;
+}
+
+void DataSet::moveOriginsBBSize(float leftright, float updown, float offSetX, float offSetY){
+	float transX = leftright * boundingBox.width + ofSign(leftright) * offSetX;
+	float transY = updown * boundingBox.height + ofSign(updown) * offSetY;
+	translateOrigins(transX,transY);
+}
+
+void DataSet::scaleOriginsFromCenter(float scaleX,float scaleY){
+	ofPoint center(boundingBox.width/2+boundingBox.x,boundingBox.height/2+boundingBox.y);
+	ofVec3f diff;
+	for (int i = 0; i < size(); ++i) {
+		PixelData * p = pixels[i];
+		ofVec3f & origin = p->particle->origin;
+		diff = center - origin;
+		diff.x *= scaleX;
+		diff.y *= scaleY;
+		origin = center + diff;
+	}
+
+	//scale boundingbox from center
+	diff = center - ofVec3f(boundingBox.x,boundingBox.y);
+	diff.x *= scaleX;
+	diff.y *= scaleY;
+	boundingBox.x = center.x + diff.x;
+	boundingBox.y = center.y + diff.y;
+	boundingBox.width *= scaleX;
+	boundingBox.height *= scaleY;
 }
 
 int DataSet::freeParticles() {
