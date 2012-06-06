@@ -90,6 +90,7 @@ typedef enum {
 class SwarmParticle: public ofPoint {
 
 public:
+	ofColor c;
 	ofVec3f vel;
 	ofVec3f acc;
 	ofPoint origin;

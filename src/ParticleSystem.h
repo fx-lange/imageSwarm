@@ -7,7 +7,6 @@
 
 class SwarmParticleSystem {
 protected:
-	int index;
 
 	float timeStep;
 
@@ -15,6 +14,7 @@ protected:
 	unsigned int width, height, binPower, xBins, yBins, binSize;
 
 public:
+	int index;
 
     int nFree;
 

@@ -123,7 +123,7 @@ void SwarmParticle::follow(FlowField f) {
 
 //We accumulate a new acceleration each time based on three rules
 void SwarmParticle::flock(vector<SwarmParticle*> & boids) {
-	if(isFree())
+	if(isFree() || state == PARTICLE_ORIGIN)
 		return;
 	ofVec3f sep = separate(boids); // Separation
 	ofVec3f ali = align(boids); // Alignment
@@ -279,6 +279,9 @@ void SwarmParticle::drawVertex() {
 	if (bFree) {
 		return;
 	}
-	ofSetColor(255, 255, 255, alpha);
+//	ofSetColor(255);
+	ofSetColor(c,alpha);
+//	ofSetColor(255,c.g < 255 ? 0 : 255, 255, alpha);
 	glVertex3f(x, y, z);
+	ofSetColor(255);
 }

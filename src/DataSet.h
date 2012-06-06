@@ -20,6 +20,7 @@ protected:
 	ofRectangle boundingBox;
 	vector<PixelData*> pixels;
 	int loaded;
+	int used;
 
 public:
 	DataSet();
