@@ -143,17 +143,14 @@ void SwarmParticle::oldflock(vector<SwarmParticle*> & boids) {
 
 void SwarmParticle::flock(vector<SwarmParticle*> & boids){
 
-	float alignDist = 25.0; //TODO gui
 	ofVec3f align(0, 0, 0);
 	int countAlign = 0;
 
 	//separation
-	float desiredseparation = 20.0; //TODO GUI
 	ofVec3f sep(0, 0, 0);
 	int countSeparate = 0;
 
 	//cohesion
-	float neighbordist = 50.0; //TODO GUI
 	int countCohesion = 0;
 	cohesionSum.set(0, 0, 0); //Start with empty vector to accumulate all locations
 
@@ -166,13 +163,13 @@ void SwarmParticle::flock(vector<SwarmParticle*> & boids){
 
 		if(d>0){
 			//cohesion
-			if (d < neighbordist) {
+			if (d < cohesionRange) {
 				cohesionSum += *other; // Add location
 				countCohesion++;
 			}
 
 			//separate
-			if (d < desiredseparation) {
+			if (d < desiredSeparation) {
 				// Calculate vector pointing away from neighbor
 				ofVec3f diff = *this - *other;
 				fastNormalize(diff);
@@ -182,7 +179,7 @@ void SwarmParticle::flock(vector<SwarmParticle*> & boids){
 			}
 
 			//align
-			if (d < alignDist) {
+			if (d < alignRange) {
 				align += other->vel;
 				countAlign++;
 			}

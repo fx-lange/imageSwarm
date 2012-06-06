@@ -103,6 +103,10 @@ public:
 	float separatorForce;
 	float alignForce;
 	float cohesionForce;
+	float desiredSeparation;
+	float alignRange;
+	float cohesionRange;
+
 	float zForce;
 
 	particleState state;
