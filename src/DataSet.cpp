@@ -20,8 +20,6 @@ int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 
 	loaded = 0;
 
-	float scaleImage = 2.f;
-
 	float minX,minY,maxX,maxY;
 	minX = width;
 	minY = height;
