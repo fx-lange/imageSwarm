@@ -122,7 +122,7 @@ void SwarmParticle::follow(FlowField f) {
 }
 
 //We accumulate a new acceleration each time based on three rules
-void SwarmParticle::flock(vector<SwarmParticle*> & boids) {
+void SwarmParticle::oldflock(vector<SwarmParticle*> & boids) {
 	if(isFree() || state == PARTICLE_ORIGIN)
 		return;
 	ofVec3f sep = separate(boids); // Separation
@@ -138,6 +138,100 @@ void SwarmParticle::flock(vector<SwarmParticle*> & boids) {
 	// Add the force vectors to acceleration
 	acc += sep;
 	acc += ali;
+	acc += cohesionSteer;
+}
+
+void SwarmParticle::flock(vector<SwarmParticle*> & boids){
+
+	float alignDist = 25.0; //TODO gui
+	ofVec3f align(0, 0, 0);
+	int countAlign = 0;
+
+	//separation
+	float desiredseparation = 20.0; //TODO GUI
+	ofVec3f sep(0, 0, 0);
+	int countSeparate = 0;
+
+	//cohesion
+	float neighbordist = 50.0; //TODO GUI
+	int countCohesion = 0;
+	cohesionSum.set(0, 0, 0); //Start with empty vector to accumulate all locations
+
+	for (unsigned int i = 0; i < boids.size(); i++) {
+		if(boids[i]->isFree())
+				continue;
+
+		SwarmParticle * other = boids[i];
+		float d = fastDist(*this,*other);
+
+		if(d>0){
+			//cohesion
+			if (d < neighbordist) {
+				cohesionSum += *other; // Add location
+				countCohesion++;
+			}
+
+			//separate
+			if (d < desiredseparation) {
+				// Calculate vector pointing away from neighbor
+				ofVec3f diff = *this - *other;
+				fastNormalize(diff);
+				diff /= d; // Weight by distance
+				sep += diff;
+				countSeparate++; // Keep track of how many
+			}
+
+			//align
+			if (d < alignDist) {
+				align += other->vel;
+				countAlign++;
+			}
+		}
+	}
+
+	//separate
+		// Average -- divide by how many
+		if (countSeparate > 0) {
+			sep /= (float) countSeparate;
+		}
+		// As long as the vector is greater than 0
+		float sepLength = fastLength(sep);
+		if (sepLength > 0) {
+			// Implement Reynolds: Steering = Desired - Velocity
+			fastNormalize(sep,sepLength);
+			sep *= maxSpeed;
+			sep -= vel;
+			fastLimit(sep,maxForce);
+		}
+
+	//cohesion
+		if (countCohesion > 0) {
+			cohesionSum /= (float) countCohesion;
+			cohesionSteer = steer(cohesionSum, false); // Steer towards the location
+		}
+
+	//align
+		if (countAlign > 0) {
+			align /= (float) countAlign;
+		}
+		// As long as the vector is greater than 0
+		float alignLength = fastLength(align);
+		if (alignLength > 0) {
+			// Implement Reynolds: Steering = Desired - Velocity
+			fastNormalize(align,alignLength);
+			align *= maxSpeed;
+			align -= vel;
+			fastLimit(align,maxForce);
+		}
+
+	float scatter = ofRandom(0.0);
+	sep *= (separatorForce + scatter);
+	align *= (alignForce + scatter);
+	cohesionSteer *= (cohesionForce + scatter);
+
+	// Add the force vectors to acceleration
+	acc += sep;
+	acc += align;
 	acc += cohesionSteer;
 }
 

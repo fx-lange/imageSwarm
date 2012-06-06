@@ -143,6 +143,7 @@ public:
 
 	//We accumulate a new acceleration each time based on three rules
 	void flock(vector<SwarmParticle*> & boids);
+	void oldflock(vector<SwarmParticle*> & boids);
 
 	// Separation
 	// Method checks for nearby boids and steers away
