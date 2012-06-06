@@ -64,6 +64,8 @@ void DataSet::scaleOrigins(float scaleX, float scaleY) {
 		PixelData * p = pixels[i];
 		p->particle->origin.x *= scaleX;
 		p->particle->origin.y *= scaleY;
+		p->particle->origin.x += 100;
+		p->particle->origin.y += 100;
 	}
 }
 
