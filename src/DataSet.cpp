@@ -16,10 +16,16 @@ int DataSet::loadImage(string filename,int stepSize,bool white){
 int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 	int width = image.getWidth();
 	int height = image.getHeight();
-	boundingBox.set(0,0,width,height);
+
 	loaded = 0;
 
 	float scaleImage = 2.f;
+
+	float minX,minY,maxX,maxY;
+	minX = width;
+	minY = height;
+	maxX = 0;
+	maxY = 0;
 
 	for (int x = 0; x < width; x += stepSize) {
 		for (int y = 0; y < height; y += stepSize) {
@@ -32,9 +38,19 @@ int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 				p->c = c;
 				pixels.push_back(p);
 				++loaded;
+
+				if(x > maxX)
+					maxX = x;
+				if(x < minX)
+					minX = x;
+				if(y > maxY)
+					maxY = y;
+				if(y < minY)
+					minY = y;
 			}
 		}
 	}
+	boundingBox.set(minX,minY,maxX-minX,maxY-minY);
 	return loaded;
 }
 
@@ -65,8 +81,6 @@ void DataSet::scaleOrigins(float scaleX, float scaleY) {
 		PixelData * p = pixels[i];
 		p->particle->origin.x *= scaleX;
 		p->particle->origin.y *= scaleY;
-		p->particle->origin.x += 100;
-		p->particle->origin.y += 100;
 	}
 	boundingBox.width *= scaleX;
 	boundingBox.height *= scaleY;
@@ -83,9 +97,10 @@ void DataSet::translateOrigins(float transX, float transY, float transZ) {
 	boundingBox.y += transY;
 }
 
-void DataSet::moveOriginsBBSize(float leftright, float updown, float offSetX, float offSetY){
-	float transX = leftright * boundingBox.width + ofSign(leftright) * offSetX;
-	float transY = updown * boundingBox.height + ofSign(updown) * offSetY;
+void DataSet::moveOriginsBBSize(DataSet & other, float leftright, float updown, float offSetX, float offSetY){
+	float transX = leftright * other.boundingBox.width + ofSign(leftright) * offSetX;
+	float transY = updown * other.boundingBox.height + ofSign(updown) * offSetY;
+	cout << "translate: " << transX << " / " << transY << endl;
 	translateOrigins(transX,transY);
 }
 
