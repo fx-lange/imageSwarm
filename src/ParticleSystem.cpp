@@ -74,6 +74,8 @@ vector<SwarmParticle*> SwarmParticleSystem::getNeighbors(float x, float y,
 	maxrsq = radius * radius;
 	for(int i = 0; i < n; i++) {
 		SwarmParticle& cur = *region[i];
+		if(cur.isFree())
+			continue;
 		xd = cur.x - x;
 		yd = cur.y - y;
 		rsq = xd * xd + yd * yd;

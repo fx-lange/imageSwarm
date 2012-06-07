@@ -145,7 +145,7 @@ void DataSet::scaleOriginsFromCenter(float scaleX, float scaleY) {
 	boundingBox.height *= scaleY;
 }
 
-int DataSet::freeParticles() {
+int DataSet::freeParticles(int freeModulo) {
 	if (!used) {
 		return 0;
 	}
@@ -153,6 +153,10 @@ int DataSet::freeParticles() {
 		PixelData * p = pixels[i];
 		p->particle->state = PARTICLE_ZLAYER;
 		p->particle->setUsed(false);
+		if( i%2 == 0 && freeModulo % 2 == 0)
+			p->particle->setFree(true,true);
+		if( i%3 == 0 && freeModulo % 3 == 0)
+			p->particle->setFree(true,true);
 //		p->c.set(255,255,255);
 		p->particle = NULL;
 	}

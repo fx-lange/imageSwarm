@@ -43,7 +43,7 @@ public:
 			float offSetX = 0, float offSetY = 0);
 	void scaleOriginsFromCenter(float scaleX, float scaleY);
 
-	int freeParticles();
+	int freeParticles(int freeModulo = 1);
 };
 
 #endif /* DATASET_H_ */
