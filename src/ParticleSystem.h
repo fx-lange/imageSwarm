@@ -34,7 +34,7 @@ public:
 	unsigned size() const;
 	SwarmParticle& operator[](unsigned i);
 	SwarmParticle * getNextFree();
-	SwarmParticle * getNextUnused();
+	SwarmParticle * getNextUnused(bool notFree = false);
 
 	void setupForces();
 

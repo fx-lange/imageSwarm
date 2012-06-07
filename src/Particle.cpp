@@ -8,7 +8,7 @@ SwarmParticle::SwarmParticle(float _x, float _y, float _xv, float _yv) :
 	radius = 2;
 	origin.set(_x, _y);
 	vel.set(_xv, _yv);
-	state = PARTICLE_FREE;
+	state = PARTICLE_ZLAYER;
 	bUsed = false;
 }
 
@@ -17,7 +17,9 @@ void SwarmParticle::setFree(bool free, bool moveZ) {
 	if (bFree) {
 		alpha = 0;
 		if(moveZ){
-			z = ofRandom(-100,100);
+			z = ofRandom(50,150);
+			x += ofRandom(-200,200);
+			y += ofRandom(-200,200);
 		}
 		bIgnoreForce = true;
 	} else {

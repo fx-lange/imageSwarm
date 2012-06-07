@@ -10,6 +10,7 @@
  */
 
 struct PixelData {
+	bool used;
 	float x, y;
 	ofColor c;
 	SwarmParticle * particle;
@@ -34,8 +35,9 @@ public:
 	int loadImage(string filename, int stepSize, bool white = false);
 	int loadImage(ofImage & image, int stepSize, bool white = false);
 
-	int pixelsToParticles(SwarmParticleSystem * ps);
+	int pixelsToParticles(SwarmParticleSystem * ps, bool notFree = false);
 
+	void checkBorders(SwarmParticleSystem * ps, float minX, float minY, float maxX, float maxY);
 	void setOriginForceActive(bool active);
 	void scaleOrigins(float scaleX, float scaleY);
 	void translateOrigins(float transX, float transY, float transZ = 0);

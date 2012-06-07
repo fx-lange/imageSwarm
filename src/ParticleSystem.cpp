@@ -43,10 +43,10 @@ SwarmParticle * SwarmParticleSystem::getNextFree() {
 	return p;
 }
 
-SwarmParticle * SwarmParticleSystem::getNextUnused() {
+SwarmParticle * SwarmParticleSystem::getNextUnused(bool dontBeFree) {
 	SwarmParticle * p = particles[index];
 	index = (index + 1) % (particles.size());
-	while (p->isUsed()) { //TODO only not free unused?
+	while (p->isUsed() || ( dontBeFree && p->isFree())) { //TODO only not free unused?
 		p = particles[index];
 		index = (index + 1) % (particles.size());
 	}

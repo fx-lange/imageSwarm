@@ -53,17 +53,50 @@ int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 	return loaded;
 }
 
-int DataSet::pixelsToParticles(SwarmParticleSystem * ps) {
+int DataSet::pixelsToParticles(SwarmParticleSystem * ps, bool notFree) {
 	for (int i = 0; i < size(); ++i) {
-		SwarmParticle * swarmParticle = ps->getNextUnused();
+		SwarmParticle * swarmParticle = ps->getNextUnused(notFree);
 		PixelData * p = pixels[i];
 		swarmParticle->origin.set(p->x, p->y, 0);
 		swarmParticle->state = PARTICLE_ORIGIN;
 		swarmParticle->c = p->c;
 		p->particle = swarmParticle;
+		p->used = true;
 	}
 	used = true;
 	return size();
+}
+
+void DataSet::checkBorders(SwarmParticleSystem * ps, float minX, float minY, float maxX, float maxY){
+	if(!used){
+		return;
+	}
+	for (int i = 0; i < size(); ++i) {
+		PixelData * p = pixels[i];
+		bool inside = true;
+		if (p->x < minX || p->x > maxX || p->y < minY
+				|| p->y > maxY ) {
+			inside = false;
+		}
+
+		if(p->used && !inside){
+			//raus
+			p->particle->setUsed(false);
+			p->particle->state = PARTICLE_ZLAYER;
+			p->particle = NULL;
+			p->used = false;
+
+		}else if(!p->used && inside){
+			//rein
+			SwarmParticle * swarmParticle = ps->getNextUnused();
+			PixelData * p = pixels[i];
+			swarmParticle->origin.set(p->x, p->y, 0);
+			swarmParticle->state = PARTICLE_ORIGIN;
+			swarmParticle->c = p->c;
+			p->particle = swarmParticle;
+			p->used = true;
+		}
+	}
 }
 
 void DataSet::setOriginForceActive(bool active) {
@@ -86,8 +119,10 @@ void DataSet::scaleOrigins(float scaleX, float scaleY) {
 	}
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
-		p->particle->origin.x *= scaleX;
-		p->particle->origin.y *= scaleY;
+		p->x *= scaleX;
+		p->y *= scaleY;
+		p->particle->origin.x = p->x;
+		p->particle->origin.y = p->y;
 	}
 	boundingBox.width *= scaleX;
 	boundingBox.height *= scaleY;
@@ -99,8 +134,12 @@ void DataSet::translateOrigins(float transX, float transY, float transZ) {
 	}
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
-		p->particle->origin.x += transX;
-		p->particle->origin.y += transY;
+		p->x += transX;
+		p->y += transY;
+		if(!p->used)
+			continue;
+		p->particle->origin.x = p->x;
+		p->particle->origin.y = p->y;
 		p->particle->origin.z += transZ;
 	}
 	boundingBox.x += transX;
@@ -159,6 +198,7 @@ int DataSet::freeParticles(int freeModulo) {
 			p->particle->setFree(true,true);
 //		p->c.set(255,255,255);
 		p->particle = NULL;
+		p->used = false;
 	}
 	used = false;
 	return size();
