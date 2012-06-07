@@ -12,11 +12,13 @@ SwarmParticle::SwarmParticle(float _x, float _y, float _xv, float _yv) :
 	bUsed = false;
 }
 
-void SwarmParticle::setFree(bool free) {
+void SwarmParticle::setFree(bool free, bool moveZ) {
 	bFree = free;
 	if (bFree) {
 		alpha = 0;
-//		z = 0;
+		if(moveZ){
+			z = ofRandom(-100,100);
+		}
 		bIgnoreForce = true;
 	} else {
 		bIgnoreForce = false;

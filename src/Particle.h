@@ -124,7 +124,7 @@ public:
 		return bFree;
 	}
 
-	virtual void setFree(bool free);
+	virtual void setFree(bool free,bool moveZ = false);
 
 	virtual bool ignoresForces() {
 		return bIgnoreForce;
