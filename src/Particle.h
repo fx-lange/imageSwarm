@@ -169,6 +169,17 @@ public:
 	// Takes a second argument, if true, it slows down as it approaches the target
 	ofVec3f steer(ofVec3f target, bool slowdown);
 
+	//check for origins which are not inside the world
+	void checkOrigin(float minX, float minY, float maxX, float maxY, float minZ,
+			float maxZ) {
+
+		if (origin.x < minX || origin.x > maxX || origin.y < minY
+				|| origin.y > maxY || origin.z < minZ || origin.z > maxZ) {
+			state = PARTICLE_ZLAYER;
+			setUsed(false);
+		}
+	}
+
 	// Wraparound
 	void borders(float minX, float minY, float maxX, float maxY, float minZ,
 			float maxZ) {
@@ -178,6 +189,10 @@ public:
 			vel.y *= -1;
 		if (z < minZ || z > maxZ)
 			vel.z *= -1;
+
+		checkOrigin(minX, minY, maxX, maxY, minZ, maxZ);
+
+		//durchfluss
 //	    if (x < minX) x = maxX;
 //	    if (y < minY) y = maxY;
 //	    if (x > maxX) x = minX;
