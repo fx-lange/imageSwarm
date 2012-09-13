@@ -10,7 +10,7 @@ int DataSet::loadImage(string filename, int stepSize, bool white) {
 	ofImage image;
 	image.loadImage(filename);
 	image.setImageType(OF_IMAGE_COLOR);
-	used = false;
+	isInUse = false;
 	return loadImage(image, stepSize, white);
 }
 
@@ -53,7 +53,7 @@ int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 	return loaded;
 }
 
-int DataSet::pixelsToParticles(SwarmParticleSystem * ps, bool notFree) {
+void DataSet::pixelsToParticles(SwarmParticleSystem * ps, bool notFree) {
 	for (int i = 0; i < size(); ++i) {
 		SwarmParticle * swarmParticle = ps->getNextUnused(notFree);
 		PixelData * p = pixels[i];
@@ -61,32 +61,65 @@ int DataSet::pixelsToParticles(SwarmParticleSystem * ps, bool notFree) {
 		swarmParticle->state = PARTICLE_ORIGIN;
 		swarmParticle->c = p->c;
 		p->particle = swarmParticle;
-		p->used = true;
+		p->hasParticle = true;
 	}
-	used = true;
-	return size();
+	isInUse = true;
+}
+
+void DataSet::reuseDataSet(SwarmParticleSystem * ps, DataSet * reuseDataSet,int percent) {
+	for (int i = 0; i < size(); ++i) {
+		int dice = ofRandom(0,99);
+
+		SwarmParticle * swarmParticle;
+		if( dice < percent ){
+			swarmParticle ; //TODO get from reusedataset
+			bool bFound = false;
+			for(int j=i;j<reuseDataSet->size()&&!bFound;++j){
+				PixelData * reusePixel = reuseDataSet->getPixel(j);
+				if(reusePixel->particle != NULL && !reusePixel->particle->isUsed()){
+					swarmParticle = reusePixel->particle;
+					ps->setParticleUsed(swarmParticle);
+					bFound = true;
+				}
+			}
+
+			if(!bFound){
+				cout << "reuse failed" << endl;
+				percent = 0;
+				swarmParticle = ps->getNextUnused(true);
+			}
+		}else{
+			swarmParticle = ps->getNextUnused(true);
+		}
+		PixelData * p = pixels[i];
+		swarmParticle->origin.set(p->x, p->y, 0);
+		swarmParticle->state = PARTICLE_ORIGIN;
+		swarmParticle->c = p->c;
+		p->particle = swarmParticle;
+		p->hasParticle = true;
+	}
+	isInUse = true;
 }
 
 void DataSet::checkBorders(SwarmParticleSystem * ps, float minX, float minY, float maxX, float maxY){
-	if(!used){
+	if(!isInUse){
 		return;
 	}
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
-		bool inside = true;
+		bool isInside = true;
 		if (p->x < minX || p->x > maxX || p->y < minY
 				|| p->y > maxY ) {
-			inside = false;
+			isInside = false;
 		}
 
-		if(p->used && !inside){
+		if(p->hasParticle && !isInside){
 			//raus
-			p->particle->setUsed(false);
-			p->particle->state = PARTICLE_ZLAYER;
+			ps->passbackParticle(p->particle);
 			p->particle = NULL;
-			p->used = false;
+			p->hasParticle = false;
 
-		}else if(!p->used && inside){
+		}else if(!p->hasParticle && isInside){
 			//rein
 			SwarmParticle * swarmParticle = ps->getNextUnused();
 			PixelData * p = pixels[i];
@@ -94,13 +127,13 @@ void DataSet::checkBorders(SwarmParticleSystem * ps, float minX, float minY, flo
 			swarmParticle->state = PARTICLE_ORIGIN;
 			swarmParticle->c = p->c;
 			p->particle = swarmParticle;
-			p->used = true;
+			p->hasParticle = true;
 		}
 	}
 }
 
 void DataSet::setOriginForceActive(bool active) {
-	if (!used) {
+	if (!isInUse) {
 		return;
 	}
 	particleState state = PARTICLE_FREE;
@@ -114,7 +147,7 @@ void DataSet::setOriginForceActive(bool active) {
 }
 
 void DataSet::scaleOrigins(float scaleX, float scaleY) {
-	if (!used) {
+	if (!isInUse) {
 		return;
 	}
 	for (int i = 0; i < size(); ++i) {
@@ -129,14 +162,11 @@ void DataSet::scaleOrigins(float scaleX, float scaleY) {
 }
 
 void DataSet::translateOrigins(float transX, float transY, float transZ) {
-	if (!used) {
-		return;
-	}
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
 		p->x += transX;
 		p->y += transY;
-		if(!p->used)
+		if(!p->hasParticle)
 			continue;
 		p->particle->origin.x = p->x;
 		p->particle->origin.y = p->y;
@@ -148,7 +178,7 @@ void DataSet::translateOrigins(float transX, float transY, float transZ) {
 
 void DataSet::moveOriginsBBSize(DataSet & other, float leftright, float updown,
 		float offSetX, float offSetY) {
-	if (!used) {
+	if (!isInUse) {
 		return;
 	}
 	float transX = leftright * other.boundingBox.width
@@ -159,7 +189,7 @@ void DataSet::moveOriginsBBSize(DataSet & other, float leftright, float updown,
 }
 
 void DataSet::scaleOriginsFromCenter(float scaleX, float scaleY) {
-	if (!used) {
+	if (!isInUse) {
 		return;
 	}
 	ofPoint center(boundingBox.width / 2 + boundingBox.x,
@@ -184,23 +214,22 @@ void DataSet::scaleOriginsFromCenter(float scaleX, float scaleY) {
 	boundingBox.height *= scaleY;
 }
 
-int DataSet::freeParticles(int freeModulo) {
-	if (!used) {
-		return 0;
+void DataSet::freeParticles(SwarmParticleSystem * ps,int freeModulo) {
+	if (!isInUse) {
+		return;
 	}
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
-		p->particle->state = PARTICLE_ZLAYER;
-		p->particle->setUsed(false);
+		bool setFree = false;
 		if( i%2 == 0 && freeModulo % 2 == 0)
-			p->particle->setFree(true,true);
+			setFree = true;
 		if( i%3 == 0 && freeModulo % 3 == 0)
-			p->particle->setFree(true,true);
+			setFree = true;
 //		p->c.set(255,255,255);
-		p->particle = NULL;
-		p->used = false;
+		ps->passbackParticle(p->particle,setFree);
+//		p->particle = NULL; keep pointer for reuse possibility
+		p->hasParticle = false;
 	}
-	used = false;
-	return size();
+	isInUse = false;
 }
 

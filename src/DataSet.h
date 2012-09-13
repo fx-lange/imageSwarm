@@ -7,10 +7,12 @@
 /** TODO
  * dependent behaviour between datasets
  * size depent particle amount
+ *
+ * improve and rename PixelData and DataSet ...
  */
 
 struct PixelData {
-	bool used;
+	bool hasParticle;
 	float x, y;
 	ofColor c;
 	SwarmParticle * particle;
@@ -21,7 +23,7 @@ protected:
 	ofRectangle boundingBox;
 	vector<PixelData*> pixels;
 	int loaded;
-	int used;
+	int isInUse;
 
 public:
 	DataSet();
@@ -35,7 +37,15 @@ public:
 	int loadImage(string filename, int stepSize, bool white = false);
 	int loadImage(ofImage & image, int stepSize, bool white = false);
 
-	int pixelsToParticles(SwarmParticleSystem * ps, bool notFree = false);
+	void pixelsToParticles(SwarmParticleSystem * ps, bool notFree = false);
+	void reuseDataSet(SwarmParticleSystem * ps, DataSet * reuseDataSet, int percent);
+
+	PixelData * getPixel(int idx){
+		if(idx >= pixels.size()){
+			return NULL;
+		}
+		return pixels[idx];
+	}
 
 	void checkBorders(SwarmParticleSystem * ps, float minX, float minY, float maxX, float maxY);
 	void setOriginForceActive(bool active);
@@ -45,7 +55,7 @@ public:
 			float offSetX = 0, float offSetY = 0);
 	void scaleOriginsFromCenter(float scaleX, float scaleY);
 
-	int freeParticles(int freeModulo = 1);
+	void freeParticles(SwarmParticleSystem * ps, int freeModulo = 1);
 };
 
 #endif /* DATASET_H_ */

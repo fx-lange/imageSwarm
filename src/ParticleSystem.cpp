@@ -1,7 +1,7 @@
 #include "ParticleSystem.h"
 
 SwarmParticleSystem::SwarmParticleSystem() :
-		timeStep(1) {
+		timeStep(1),nUsed(0),nActive(0) {
 }
 
 void SwarmParticleSystem::setup(int width, int height, int binPower) {
@@ -21,10 +21,20 @@ void SwarmParticleSystem::setTimeStep(float timeStep) {
 
 void SwarmParticleSystem::add(SwarmParticle * particle) {
 	particles.push_back(particle);
+	if(particle->isActive()){
+		++nActive;
+	}
 }
 
 unsigned SwarmParticleSystem::size() const {
 	return particles.size();
+}
+
+void SwarmParticleSystem::printNumbers(){
+	cout << "Total: 	" << size() << endl;
+	cout << "Used:		" << nUsed << endl;
+	cout << "Active:	" << nActive << endl;
+	cout << "Free: 		" << nActive -nUsed << endl;
 }
 
 SwarmParticle& SwarmParticleSystem::operator[](unsigned i) {
@@ -32,29 +42,54 @@ SwarmParticle& SwarmParticleSystem::operator[](unsigned i) {
 	return (*p);
 }
 
-SwarmParticle * SwarmParticleSystem::getNextFree() {
+SwarmParticle * SwarmParticleSystem::getNextFree() { //TODO needed anymore?
 	SwarmParticle * p = particles[index];
 	index = (index + 1) % (particles.size());
-	while (!p->isFree()) {
+	while (p->isActive()) {
 		p = particles[index];
 		index = (index + 1) % (particles.size());
 	}
-	p->setFree(false);
+	p->setActive(true);
 	return p;
 }
 
-SwarmParticle * SwarmParticleSystem::getNextUnused(bool dontBeFree) {
+/**
+ *
+ */
+SwarmParticle * SwarmParticleSystem::getNextUnused(bool onlyActive) { //rename to getNextFree
+	if(onlyActive && nActive == nUsed){
+		onlyActive = false; //cause no more unfree and unused left //TODO naming!
+	}
+
 	SwarmParticle * p = particles[index];
 	index = (index + 1) % (particles.size());
-	while (p->isUsed() || ( dontBeFree && p->isFree())) { //TODO only not free unused?
+	while (p->isUsed() || ( onlyActive && !p->isActive())) {
 		p = particles[index];
 		index = (index + 1) % (particles.size());
 	}
 	p->setUsed(true);
-	if (p->isFree()) {
-		p->setFree(false);
-	}
+	setParticleUsed(p);
 	return p;
+}
+
+void SwarmParticleSystem::passbackParticle(SwarmParticle * p,bool setFree){
+	p->state = PARTICLE_ZLAYER;
+	p->setUsed(false);
+	--nUsed;
+
+	if(setFree){
+		p->setActive(false,true);
+		--nActive;
+	}
+}
+
+void SwarmParticleSystem::setParticleUsed(SwarmParticle * p){
+	p->setUsed(true);
+	++nUsed;
+	if (!p->isActive()) {
+		p->setActive(true);
+		++nActive;
+	}
 }
 
 vector<SwarmParticle*> SwarmParticleSystem::getNeighbors(
@@ -74,7 +109,7 @@ vector<SwarmParticle*> SwarmParticleSystem::getNeighbors(float x, float y,
 	maxrsq = radius * radius;
 	for(int i = 0; i < n; i++) {
 		SwarmParticle& cur = *region[i];
-		if(cur.isFree())
+		if(!cur.isActive())
 			continue;
 		xd = cur.x - x;
 		yd = cur.y - y;
@@ -185,7 +220,7 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ,
 			int n = curBin.size();
 			for (int i = 0; i < n; i++) {
 				SwarmParticle& curParticle = *(curBin[i]);
-				if (curParticle.isFree() || curParticle.ignoresForces()) {
+				if ( curParticle.ignoresForces()) {
 					continue;
 				}
 				xd = curParticle.x - targetX;
@@ -235,19 +270,14 @@ void SwarmParticleSystem::addForce(float targetX, float targetY, float targetZ,
 }
 
 void SwarmParticleSystem::update(bool ignoreFree) {
-	int iFreeParticles = 0;
 	for (unsigned int i = 0; i < particles.size(); i++) {
 		SwarmParticle * p = particles[i];
 		p->updatePosition(timeStep);
-		if (p->isFree()) {
-			++iFreeParticles;
-		}
 	}
-	if (!ignoreFree && iFreeParticles < particles.size() * 0.1) {
+	if (!ignoreFree && (float)nActive > (float)particles.size() * 0.9f) {
 		ofLog(OF_LOG_WARNING, "WARNING - PARTICLE LEAK - FREE ALL!");
 		freeAllParticles();
 	}
-	nFree = iFreeParticles;
 }
 
 void SwarmParticleSystem::draw(bool circle) {
@@ -272,6 +302,6 @@ void SwarmParticleSystem::freeAllParticles() {
 	int n = particles.size();
 	for (int i = 0; i < n; i++) {
 		SwarmParticle * p = particles[i];
-		p->setFree(true);
+		p->setActive(true);
 	}
 }

@@ -16,7 +16,9 @@ protected:
 public:
 	int index;
 
-	int nFree;
+	int nActive;
+	int nUsed;
+	void printNumbers();
 
 	vector<SwarmParticle*> particles;
 	SwarmParticleSystem();
@@ -32,9 +34,13 @@ public:
 	vector<SwarmParticle*> getRegion(unsigned minX, unsigned minY,
 			unsigned maxX, unsigned maxY);
 	unsigned size() const;
+
 	SwarmParticle& operator[](unsigned i);
+
 	SwarmParticle * getNextFree();
 	SwarmParticle * getNextUnused(bool notFree = false);
+	void passbackParticle(SwarmParticle * p,bool setFree = false);
+	void setParticleUsed(SwarmParticle * p);
 
 	void setupForces();
 
@@ -53,84 +59,3 @@ public:
 
 	void freeAllParticles();
 };
-
-//class ParticleSystemQ3 : public ParticleSystem{
-//public:
-//	virtual void update(float radius = -10){
-//		int n = particles.size();
-//		int iFree=0;
-//		for (int i = 0; i < n; i++){
-//			ParticleQ3 * pQ3 = (ParticleQ3*)particles[i];
-//			pQ3->updatePosition(timeStep);
-//			if(radius>-10)
-//				pQ3->d = pQ3->initD = radius*2;
-//			if(pQ3->bFree)
-//				iFree++;
-//		}
-//		if(iFree < 1000){
-//			ofLog(OF_LOG_WARNING,"PARTICLE LEAK - FREE ALL!");
-//			freeAllParticles();
-//		}
-//	}
-//
-//	void boost(float input,float percent) {
-//		int n = particles.size();
-//		for (int i = 0; i < n; i++){
-//			ParticleQ3 * pQ3 = (ParticleQ3*)particles[i];
-//			if(pQ3->bFree)
-//				continue;
-//			float percentInput = (percent / 100) * input;
-//			float randomBoost = ofRandom(-percentInput,percentInput)+input;
-//			pQ3->boost(randomBoost);
-//		}
-//	}
-//
-//	virtual void draw(float grey = 255){
-//		int n = particles.size();
-//		for (int i = 0; i < n; i++){
-//			ParticleQ3  * pQ3 = (ParticleQ3*)particles[i];
-//			pQ3->draw(grey);
-//		}
-//	}
-//};
-
-//class ParticleSystemLine : public ParticleSystem{
-//public:
-//	virtual void update(float radius = -10){
-//		int n = particles.size();
-//		int iFree=0;
-//		for (int i = 0; i < n; i++){
-//			ParticleQ3 * pQ3 = (ParticleQ3*)particles[i];
-//			pQ3->updatePosition(timeStep);
-//			if(radius>-10)
-//				pQ3->d = pQ3->initD = radius*2;
-//			if(pQ3->bFree)
-//				iFree++;
-//		}
-//		if(iFree < 1000){
-//			cout << "WARNING - PARTICLE LEAK - FREE ALL!" << endl;
-//			freeAllParticles();
-//		}
-//	}
-//
-//	void boost(float input,float percent) {
-//		int n = particles.size();
-//		for (int i = 0; i < n; i++){
-//			ParticleQ3 * pQ3 = (ParticleQ3*)particles[i];
-//			if(pQ3->bFree)
-//				continue;
-//			float percentInput = (percent / 100) * input;
-//			float randomBoost = ofRandom(-percentInput,percentInput)+input;
-//			pQ3->boost(randomBoost);
-//		}
-//	}
-//
-//	virtual void draw(float grey = 255){
-//		int n = particles.size();
-//		for (int i = 0; i < n; i++){
-//			ParticleQ3  * pQ3 = (ParticleQ3*)particles[i];
-//			pQ3->draw(grey);
-//		}
-//	}
-//};
-

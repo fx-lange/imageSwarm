@@ -2,7 +2,7 @@
 
 SwarmParticle::SwarmParticle(float _x, float _y, float _xv, float _yv) :
 		ofPoint(_x, _y) {
-	bFree = true;
+	bActive = false;
 	bIgnoreForce = true;
 	alpha = 0;
 	radius = 2;
@@ -12,9 +12,13 @@ SwarmParticle::SwarmParticle(float _x, float _y, float _xv, float _yv) :
 	bUsed = false;
 }
 
-void SwarmParticle::setFree(bool free, bool moveZ) {
-	bFree = free;
-	if (bFree) {
+void SwarmParticle::setActive(bool active, bool moveZ) {
+	bActive = active;
+	if (bActive) {
+		bIgnoreForce = false;
+		alpha = 255;
+//		z = 0;
+	} else {
 		alpha = 0;
 		if(moveZ){
 			z = ofRandom(50,150);
@@ -22,10 +26,6 @@ void SwarmParticle::setFree(bool free, bool moveZ) {
 			y += ofRandom(-200,200);
 		}
 		bIgnoreForce = true;
-	} else {
-		bIgnoreForce = false;
-		alpha = 255;
-//		z = 0;
 	}
 	bKillSoft = false;
 }
@@ -85,7 +85,7 @@ void SwarmParticle::addOriginForce(float scale) {
 }
 
 void SwarmParticle::updatePosition(float timeStep) {
-	if (bFree)
+	if (!bActive)
 		return;
 	// f = ma, m = 1, f = a, v = int(a)
 	vel += acc;
@@ -127,7 +127,7 @@ void SwarmParticle::follow(FlowField f) {
 
 //We accumulate a new acceleration each time based on three rules
 void SwarmParticle::oldflock(vector<SwarmParticle*> & boids) {
-	if(isFree() || state == PARTICLE_ORIGIN)
+	if(!isActive() || state == PARTICLE_ORIGIN)
 		return;
 	ofVec3f sep = separate(boids); // Separation
 	ofVec3f ali = align(boids); // Alignment
@@ -159,7 +159,7 @@ void SwarmParticle::flock(vector<SwarmParticle*> & boids){
 	cohesionSum.set(0, 0, 0); //Start with empty vector to accumulate all locations
 
 	for (unsigned int i = 0; i < boids.size(); i++) {
-		if(boids[i]->isFree())
+		if(!boids[i]->isActive())
 				continue;
 
 		SwarmParticle * other = boids[i];
@@ -244,7 +244,7 @@ ofVec3f SwarmParticle::separate(vector<SwarmParticle*> & boids) {
 	int count = 0;
 	// For every boid in the system, check if it's too close
 	for (int i = 0; i < boids.size(); i++) {
-		if(boids[i]->isFree())
+		if(!boids[i]->isActive())
 			continue;
 		ofVec3f * other = boids[i];
 		float d = fastDist(*this,*other);
@@ -283,7 +283,7 @@ ofVec3f SwarmParticle::align(vector<SwarmParticle*> & boids) {
 	ofVec3f steer(0, 0, 0);
 	int count = 0;
 	for (int i = 0; i < boids.size(); i++) {
-		if(boids[i]->isFree())
+		if(!boids[i]->isActive())
 				continue;
 		SwarmParticle * other = boids[i];
 		float d =fastDist(*this,*other);
@@ -315,7 +315,7 @@ ofVec3f SwarmParticle::cohesion(vector<SwarmParticle *> & boids) {
 	cohesionSum.set(0, 0, 0); // Start with empty vector to accumulate all locations
 	int count = 0;
 	for (unsigned int i = 0; i < boids.size(); i++) {
-		if(boids[i]->isFree())
+		if(!boids[i]->isActive())
 				continue;
 		SwarmParticle * other = boids[i];
 		float d = fastDist(*this,*other);
@@ -356,7 +356,7 @@ ofVec3f SwarmParticle::steer(ofVec3f target, bool slowdown) {
 }
 
 void SwarmParticle::draw(float grey) {
-	if (bFree) {
+	if (!bActive) {
 		return;
 	}
 	ofSetColor(grey, grey, grey, alpha); //TODO include z
@@ -371,7 +371,7 @@ void SwarmParticle::draw(float grey) {
 }
 
 void SwarmParticle::drawVertex() {
-	if (bFree) {
+	if (!bActive) {
 		return;
 	}
 //	ofSetColor(255);

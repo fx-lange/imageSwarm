@@ -120,11 +120,11 @@ public:
 	virtual ~SwarmParticle() {
 	}
 
-	virtual bool isFree() {
-		return bFree;
+	virtual bool isActive() {
+		return bActive;
 	}
 
-	virtual void setFree(bool free,bool moveZ = false);
+	virtual void setActive(bool free,bool moveZ = false);
 
 	virtual bool ignoresForces() {
 		return bIgnoreForce;
@@ -219,7 +219,7 @@ protected:
 	ofVec3f cohesionSum;
 	ofVec3f cohesionSteer;
 
-	bool bFree;
+	bool bActive;
 	bool bIgnoreForce;
 	bool bKillSoft;
 	bool bUsed;
