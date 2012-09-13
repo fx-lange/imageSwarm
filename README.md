@@ -4,6 +4,7 @@ imageSwarm
 content/images based 3D swarm  
 
 speed project for IxDS - will be cleaned up soon
+can't recommend using it in this state
 
 Credits
 ==========
