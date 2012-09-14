@@ -176,8 +176,14 @@ void SwarmParticle::flock(vector<SwarmParticle*> & boids){
 			if (d < desiredSeparation) {
 				// Calculate vector pointing away from neighbor
 				ofVec3f diff = *this - *other;
-				fastNormalize(diff);
-				diff /= d; // Weight by distance
+
+//				fastNormalize(diff);
+//				diff /= d; // Weight by distance
+
+				//by robert hodgin - instead of weighting by distance
+				float F = ( desiredSeparation/d - 1.0f ) * 0.01f;//TODO GUI:fraction
+				diff = diff.normalized() * F; //slow?
+//				p2->mAcc -= diff;// for both in one ... TODO nested list
 				sep += diff;
 				countSeparate++; // Keep track of how many
 			}
