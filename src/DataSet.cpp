@@ -29,8 +29,8 @@ int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 	for (int x = 0; x < width; x += stepSize) {
 		for (int y = 0; y < height; y += stepSize) {
 			ofColor c = image.getColor(x, y);
-			if ((white && c.getBrightness() > 1)
-					|| (!white && c.getBrightness() < 100)) {
+			if ((white && c.getBrightness() > 200)
+					|| (!white && c.getBrightness() < 50)) {
 				PixelData * p = new PixelData();
 				p->x = x;
 				p->y = y;

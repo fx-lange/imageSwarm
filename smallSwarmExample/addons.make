@@ -1,0 +1,5 @@
+ofxOpenCv
+imageSwarm
+ofxXmlSettings
+ofxGui
+ofxVideoRecorder
