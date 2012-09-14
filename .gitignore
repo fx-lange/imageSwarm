@@ -1,2 +1,4 @@
 smallSwarmExample/.*
 smallSwarmExample/obj/*
+smallSwarmExample/bin/libs/*
+smallSwarmExample/bin/small*
