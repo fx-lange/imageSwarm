@@ -8,8 +8,6 @@
 #include "ofxGui.h"
 #include "ofxVideoRecorder.h"
 
-//#define PERFTEST
-
 class SwarmSettings {
 public:
 	ofxFloatSlider originForce;
@@ -57,15 +55,6 @@ public:
 	void freeDataSet(DataSet & ds,int freeModulo = 1) {
 		ds.freeParticles(&ps,freeModulo);
 	}
-
-	/* VIDEO RECORDING */
-	ofxVideoRecorder vidRecorder;
-	bool bRecord, bHasRecorded;
-	ofImage videoFrame;
-
-	ofVideoPlayer player;
-	bool play;
-
 	/* GUI */
 	bool bHide;
 	string filename;
@@ -74,7 +63,6 @@ public:
 	ofxPanel originPanel;
 	ofxPanel freePanel;
 	ofxPanel shaderPanel;
-	ofxPanel extras;
 	//particle
 	SwarmSettings origin, free;
 	ofxFloatSlider timeStep;
@@ -85,29 +73,17 @@ public:
 	ofxFloatSlider aperture;
 	ofxFloatSlider pointBrightness;
 	ofxIntSlider maxPointSize;
-	//scene2
-	ofxFloatSlider translateSpeed;
-	ofxFloatSlider boerseMinX;
-	ofxFloatSlider boerseMaxX;
-	ofxFloatSlider boerseMinY;
-	ofxFloatSlider boerseMaxY;
-	//scene3
-	ofxIntSlider videoAlpha;
 
 	/* Swarm */
 	SwarmParticleSystem ps;
-	float kParticles;
 
 	/* World */
 	ofRectangle scene;
-	float sceneOffset; //difference between particle world and scene
 	float sceneDepth;
+	float sceneOffset; //difference between particle world and scene
 
 	/* Content */
-	int whichScene;
-	int sceneCounter;
-	float dataMoveOffsetX;
-	float dataMoveOffsetY;
+	int animationCounter;
 
 	//Scene 1
 	DataSet f1, f0a, f0b, f2, f3, f4, f5, f5a,f5b;
@@ -119,8 +95,5 @@ public:
 	bool bUseShader;
 	ofShader dofShader;
 	ofFbo fbo;
-
-	//TEMPORÄR
-	bool useOld;
 };
 
