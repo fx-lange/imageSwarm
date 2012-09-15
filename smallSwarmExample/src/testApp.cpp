@@ -143,6 +143,8 @@ void schwarmApp::update() {
 			continue;
 
 		float originForce, dampingForce;
+
+		//update state dependent settings
 		if (cur.state == PARTICLE_ORIGIN) {
 			cur.maxSpeed = origin.maxSpeed;
 			cur.cohesionForce = origin.cohesionForce;
