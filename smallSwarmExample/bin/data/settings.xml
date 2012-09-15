@@ -4,7 +4,7 @@
 <particle_neighborhood>4.2</particle_neighborhood>
 <attractions_force>0.9</attractions_force>
 <attractions_neighborhood>175</attractions_neighborhood>
-<focus_distance>530</focus_distance>
+<focus_distance>230</focus_distance>
 <aperture>0.1575</aperture>
 <maxPointSize>27</maxPointSize>
 <point_brightness>0.9505</point_brightness>
@@ -12,7 +12,7 @@
 <separatorForce>0.18</separatorForce>
 <alignForce>1.31</alignForce>
 <cohesionForce>1.185</cohesionForce>
-<max_Force>0.145</max_Force>
+<max_Force>0.02</max_Force>
 <Z_force>0</Z_force>
 <max_speed>1.4</max_speed>
 <F_damping_force>0.03</F_damping_force>

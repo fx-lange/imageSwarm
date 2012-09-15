@@ -41,7 +41,7 @@ public:
 	void reuseDataSet(SwarmParticleSystem * ps, DataSet * reuseDataSet, int percent);
 
 	PixelData * getPixel(int idx){
-		if(idx >= pixels.size()){
+		if(idx >= (int)pixels.size()){
 			return NULL;
 		}
 		return pixels[idx];

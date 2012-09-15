@@ -72,7 +72,6 @@ void DataSet::reuseDataSet(SwarmParticleSystem * ps, DataSet * reuseDataSet,int 
 
 		SwarmParticle * swarmParticle;
 		if( dice < percent ){
-			swarmParticle ; //TODO get from reusedataset
 			bool bFound = false;
 			for(int j=i;j<reuseDataSet->size()&&!bFound;++j){
 				PixelData * reusePixel = reuseDataSet->getPixel(j);

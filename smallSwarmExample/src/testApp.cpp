@@ -17,7 +17,6 @@ void schwarmApp::loadDataSets() {
 	f5a.translateOrigins(sceneOffset, sceneOffset);
 	loaded += f5b.loadImage("scene1/7.png", 3, true);
 	f5b.translateOrigins(sceneOffset, sceneOffset);
-	}
 }
 
 void schwarmApp::addParticles(int amount, bool active) {
@@ -226,12 +225,13 @@ void schwarmApp::draw() {
 		fbo.end();
 
 		ofPushMatrix();
+		ofScale(2,2,1);
 		fbo.draw(0, 0);
 		ofPopMatrix();
 	} else {
 		ofPopMatrix();
 		ofPushMatrix();
-		ofScale(scene.width / 10, scene.height / 10, sceneDepth / 5);
+		ofScale((scene.width+ sceneOffset * 2) / 10, (scene.height+ sceneOffset * 2) / 10, sceneDepth / 5);
 		ofNoFill();
 		ofBox(10);
 		ofPopMatrix();
@@ -292,63 +292,46 @@ void schwarmApp::playScene1() {
 
 void schwarmApp::keyPressed(int key) {
 	switch (key) {
-	case 'c':
-		if (cam.getMouseInputEnabled())
-			cam.disableMouseInput();
-		else
-			cam.enableMouseInput();
-		break;
 	case 'd':
 		bUseShader = !bUseShader;
 		break;
 	case 'g':
 		bHide = !bHide;
 		break;
+	case ' ':
+		playScene1();
+		break;
 	}
-
-	if (key == ' ') {
-		if (whichScene == 1)
-			playScene1();
-	}
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::keyReleased(int key) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::mouseMoved(int x, int y) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::mouseDragged(int x, int y, int button) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::mousePressed(int x, int y, int button) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::mouseReleased(int x, int y, int button) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::windowResized(int w, int h) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::gotMessage(ofMessage msg) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::dragEvent(ofDragInfo dragInfo) {
-
 }
