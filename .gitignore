@@ -2,3 +2,7 @@ contentSwarmExample/.*
 contentSwarmExample/obj/*
 contentSwarmExample/bin/libs/*
 contentSwarmExample/bin/content*
+fillPolyExample/.*
+fillPolyExample/obj/*
+fillPolyExample/bin/libs/*
+fillPolyExample/bin/fill*
