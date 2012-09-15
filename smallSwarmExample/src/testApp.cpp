@@ -78,8 +78,7 @@ void schwarmApp::setup() {
 
 void schwarmApp::setupGui() {
 	filename = "settings.xml";
-	gui.setup("gui",filename);
-	gui.setSize(300, gui.getHeight());
+	gui.setup("gui",filename,10,85);
 	//general
 	gui.add(timeStep.setup("timestep", 0.2, 0, 1));
 	gui.add(maxNeighborhood.setup("max neighborhood", 30, 0, 100));
@@ -211,16 +210,13 @@ void schwarmApp::draw() {
 		ofTranslate(-scene.width / 2, -scene.height / 2);
 	}
 
-
 	// ---------DRAW SCENE----------
-
 	ofPushMatrix();
 	ofTranslate(-sceneOffset, -sceneOffset);
 	ps.draw(false);
 	ofPopMatrix();
 
 	// -----------------------------
-
 	if (bUseShader) {
 		dofShader.end();
 		fbo.end();
@@ -246,7 +242,12 @@ void schwarmApp::draw() {
 		gui.draw();
 	}
 
-	ofDrawBitmapString(ofToString(ofGetFrameRate()),10,10);
+	string msg = ofToString(ofGetFrameRate());
+	msg += "\r\n\r\nControls: \r\n";
+	msg += "SPACE - next animation step\r\n";
+	msg += "t - toggle 3d view\r\n";
+	msg += "g - toggle gui\r\n";
+	ofDrawBitmapString(msg,10,10);
 }
 
 void schwarmApp::exit() {
@@ -296,7 +297,7 @@ void schwarmApp::playScene1() {
 
 void schwarmApp::keyPressed(int key) {
 	switch (key) {
-	case 'd':
+	case 't':
 		bUseShader = !bUseShader;
 		break;
 	case 'g':
