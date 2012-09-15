@@ -1,26 +1,22 @@
 #include "testApp.h"
 
-void schwarmApp::loadDataSets() {
+bool compareFiles(ofFile lf,ofFile rf){
+	return lf.getFileName() <= rf.getFileName();
+}
 
-	//TODO forschleife?!
+void schwarmApp::loadDataSets() {
+	ofDirectory DIR("scene1");
+	DIR.listDir();
+	vector<ofFile> files = DIR.getFiles();
+	ofSort(files,compareFiles);
 	int loaded = 0;
-	if( whichScene == 1){
-		loaded += f1.loadImage("scene1/1.png", 3, true);
-		f1.translateOrigins(sceneOffset, sceneOffset);
-		loaded += f2.loadImage("scene1/2.png", 3, true);
-		f2.translateOrigins(sceneOffset, sceneOffset);
-		loaded += f3.loadImage("scene1/3.png", 3, true);
-		f3.translateOrigins(sceneOffset, sceneOffset);
-		loaded += f4.loadImage("scene1/madewith.png", 3, true);
-		f4.translateOrigins(sceneOffset, sceneOffset);
-		loaded += f5.loadImage("scene1/open.png", 3, true);
-		f5.translateOrigins(sceneOffset, sceneOffset);
-		loaded += f5a.loadImage("scene1/source.png", 3, true);
-		f5a.translateOrigins(sceneOffset, sceneOffset);
-		loaded += f5b.loadImage("scene1/Frameworks.png", 3, true);
-		f5b.translateOrigins(sceneOffset, sceneOffset);
+	for(int i=0;i<(int)files.size();++i){
+		DataSet ds;
+		loaded += ds.loadImage(files[i].getAbsolutePath(),3,true);
+		ds.translateOrigins(sceneOffset, sceneOffset);
+		datasets.push_back(ds);
 	}
-	ofLog(OF_LOG_NOTICE, ofToString(loaded) + " particle loaded");
+	ofLog(OF_LOG_NOTICE,ofToString(loaded) + " points loaded");
 }
 
 void schwarmApp::addParticles(int amount, bool active) {
@@ -35,9 +31,6 @@ void schwarmApp::addParticles(int amount, bool active) {
 		float yv = ofRandom(-maxVelocity, maxVelocity);
 		SwarmParticle * particle = new SwarmParticle(x, y, xv, yv);
 
-		if(whichScene == 2){
-			particle->origin.z = -sceneDepth/2;
-		}
 		particle->z = z;
 		particle->setActive(active);
 		ps.add(particle);
@@ -47,22 +40,15 @@ void schwarmApp::addParticles(int amount, bool active) {
 //--------------------------------------------------------------
 void schwarmApp::setup() {
 	ofSetFrameRate(30);
+	ofSetLogLevel(OF_LOG_VERBOSE);
 
-//fast settings
-	whichScene = 1;
-	sceneCounter = 1; //change to start at a later point in the scene
+//settings
+	animationCounter = 1; //change to start at a later point in the scene
 
-	scene.width = 1024;
-	scene.height = 768;
-//	scene.width = 450;
-//	scene.height = 200;
+	scene.width = 475;
+	scene.height = 340;
 	sceneDepth = 150;
 	sceneOffset = 100;
-
-	dataMoveOffsetX = 25;
-	dataMoveOffsetY = 10;
-
-	useOld = false;
 
 	//shader
 	bUseShader = true;
@@ -77,27 +63,22 @@ void schwarmApp::setup() {
 	//content
 	loadDataSets();
 
-	//swarm particle system
+	//setup swarm particle system
 	int binPower = 3;
 	ps.setup(scene.width + sceneOffset * 2, scene.height + sceneOffset * 2,
 			binPower);
 
-	kParticles = 5;
-
-	if(whichScene == 1){
-		kParticles = 3;
-		addParticles(kParticles * 1000, false);
-	}
+	//add 1k hidden particles
+	addParticles(1 * 1000, false);
+	//add 1k visible particles
 	addParticles(1 * 1000, true);
 
 	setupGui();
 }
 
 void schwarmApp::setupGui() {
-	filename = "settings/settings_";
-	filename += ofToString(whichScene) + ".xml";
-	gui.setup("gui",filename);
-	gui.setSize(300, gui.getHeight());
+	filename = "settings.xml";
+	gui.setup("gui",filename,10,85);
 	//general
 	gui.add(timeStep.setup("timestep", 0.2, 0, 1));
 	gui.add(maxNeighborhood.setup("max neighborhood", 30, 0, 100));
@@ -131,6 +112,7 @@ void schwarmApp::setupGui() {
 	originPanel.add(origin.alignRange.setup("align range", 20, 1, 100));
 	originPanel.add(origin.cohesionRange.setup("cohesion range", 50, 1, 100));
 	originPanel.add(origin.maxForce.setup("max Force", 0.17, 0, 1));
+
 	//particle
 	originPanel.add(origin.originForce.setup("origin force", 0.005, 0, 0.1));
 	originPanel.add(origin.zForce.setup("Z force", 0.005, 0, 0.1));
@@ -143,16 +125,6 @@ void schwarmApp::setupGui() {
 	shaderPanel.add(pointBrightness.setup("point brightness", 1, 0.7, 1));
 	shaderPanel.add(maxPointSize.setup("maxPointSize", 10, 1, 50));
 	gui.add(&shaderPanel);
-
-	//extras
-	extras.setup("Extras");
-	extras.add(translateSpeed.setup("movement pixel/f",0.5,0,5));
-	extras.add(boerseMinX.setup("minX",0,0,scene.width/2));
-	extras.add(boerseMinY.setup("minY",0,0,scene.width/2));
-	extras.add(boerseMaxX.setup("maxX",scene.width,0,scene.width));
-	extras.add(boerseMaxY.setup("maxY",scene.height,0,scene.height));
-	extras.add(videoAlpha.setup("video alpha",255,0,255));
-	gui.add(&extras);
 
 	gui.loadFromFile(filename);
 	bHide = true;
@@ -171,6 +143,8 @@ void schwarmApp::update() {
 			continue;
 
 		float originForce, dampingForce;
+
+		//update state dependent settings
 		if (cur.state == PARTICLE_ORIGIN) {
 			cur.maxSpeed = origin.maxSpeed;
 			cur.cohesionForce = origin.cohesionForce;
@@ -197,18 +171,9 @@ void schwarmApp::update() {
 			dampingForce = free.dampingForce;
 		}
 
-//		if (cur.state != PARTICLE_ORIGIN) { //TODO possible to ignore flock if origindistance is small
 
-			vector<SwarmParticle *> neighbors = ps.getNeighbors(cur,
-					maxNeighborhood);
-
-			if (useOld) {
-				cur.oldflock(neighbors);
-			} else {
-				cur.flock(neighbors);
-			}
-
-//		}
+		vector<SwarmParticle *> neighbors = ps.getNeighbors(cur, maxNeighborhood);
+		cur.flock(neighbors);
 
 		cur.borders(50, 50, scene.width - 50 + sceneOffset * 2,
 				scene.height - 50 + sceneOffset * 2, -sceneDepth, sceneDepth);
@@ -216,9 +181,6 @@ void schwarmApp::update() {
 		cur.addOriginForce(-originForce);
 		cur.addDampingForce(dampingForce);
 	}
-
-	if (ofGetMousePressed() && bHide && !cam.getMouseInputEnabled())
-		ps.addRepulsionForce(mouseX, mouseY, 0, 100, 10);
 
 	ps.update();
 }
@@ -250,39 +212,25 @@ void schwarmApp::draw() {
 		ofTranslate(-scene.width / 2, -scene.height / 2);
 	}
 
-
 	// ---------DRAW SCENE----------
-
 	ofPushMatrix();
 	ofTranslate(-sceneOffset, -sceneOffset);
 	ps.draw(false);
 	ofPopMatrix();
 
 	// -----------------------------
-
 	if (bUseShader) {
 		dofShader.end();
 		fbo.end();
 
 		ofPushMatrix();
+		ofScale(2,2,1);
 		fbo.draw(0, 0);
-		ofSetColor(255, 255, 255, videoAlpha);
-
-		if (whichScene == 2)
-			player.draw(0, 0);
-
 		ofPopMatrix();
 	} else {
 		ofPopMatrix();
 		ofPushMatrix();
-//			ofPushMatrix();
-//			ofPushStyle();
-//	//		ofSetRectMode(OF_RECTMODE_CENTER);
-//			ofTranslate
-//			ofRect(boerseMinX,boerseMinY,boerseMaxX,boerseMaxY);
-//			ofPopStyle();
-//			ofPopMatrix();
-		ofScale(scene.width / 10, scene.height / 10, sceneDepth / 5);
+		ofScale((scene.width+ sceneOffset * 2) / 10, (scene.height+ sceneOffset * 2) / 10, sceneDepth / 5);
 		ofNoFill();
 		ofBox(10);
 		ofPopMatrix();
@@ -292,9 +240,16 @@ void schwarmApp::draw() {
 
 	ofPopMatrix();
 
-	if (!bHide)
+	if (!bHide){
 		gui.draw();
-	ofDrawBitmapString(ofToString(ofGetFrameRate()),10,10);
+	}
+
+	string msg = ofToString(ofGetFrameRate());
+	msg += "\r\n\r\nControls: \r\n";
+	msg += "SPACE - next animation step\r\n";
+	msg += "t - toggle 3d view\r\n";
+	msg += "g - toggle gui\r\n";
+	ofDrawBitmapString(msg,10,10);
 }
 
 void schwarmApp::exit() {
@@ -302,106 +257,88 @@ void schwarmApp::exit() {
 
 
 void schwarmApp::playScene1() {
-	switch (sceneCounter) {
+	//hard coded animation
+
+	switch (animationCounter) {
 	case 1:
-		useDataSet(f1);
+		datasets[0].pixelsToParticles(&ps); //1
 		break;
 	case 2:
-		freeDataSet(f1);
-//		useDataSet(f2);
-		f2.reuseDataSet(&ps,&f1,40);
+		datasets[0].freeParticles(&ps);
+		datasets[1].pixelsToParticles(&ps); //2
 
 		break;
 	case 3:
-		freeDataSet(f2);
-		useDataSet(f3);
+		datasets[1].freeParticles(&ps);
+		datasets[2].pixelsToParticles(&ps); //3
 		break;
 	case 4:
-		freeDataSet(f3);
-		useDataSet(f4);
+		datasets[2].freeParticles(&ps);
+		datasets[3].reuseDataSet(&ps,&datasets[2],50); //made with
 		break;
 	case 5:
-		useDataSet(f5);
-		useDataSet(f5a);
+		datasets[4].pixelsToParticles(&ps); //open
+		datasets[5].pixelsToParticles(&ps); //source
 		break;
 	case 6:
-		freeDataSet(f5a);
-		useDataSet(f5b); //BALL
+		datasets[5].freeParticles(&ps);
+		datasets[6].reuseDataSet(&ps,&datasets[5],40); //frameworks
 		break;
 	case 7:
-		freeDataSet(f5);
-		freeDataSet(f5b);
-		freeDataSet(f4);
-		sceneCounter = -1;
+		//free all
+		datasets[3].freeParticles(&ps);
+		datasets[4].freeParticles(&ps);
+		datasets[6].freeParticles(&ps);
+		animationCounter = 0;
 		break;
 
 	}
 	ps.printNumbers();
-	sceneCounter++;
+	animationCounter++;
 }
 
 void schwarmApp::keyPressed(int key) {
 	switch (key) {
-	case 'o':
-		useOld = !useOld;
-		break;
-	case 'c':
-		if (cam.getMouseInputEnabled())
-			cam.disableMouseInput();
-		else
-			cam.enableMouseInput();
-		break;
-	case 'd':
+	case 't':
 		bUseShader = !bUseShader;
 		break;
 	case 'g':
 		bHide = !bHide;
 		break;
+	case ' ':
+		playScene1();
+		break;
 	}
-
-	if (key == ' ') {
-		if (whichScene == 1)
-			playScene1();
-	}
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::keyReleased(int key) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::mouseMoved(int x, int y) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::mouseDragged(int x, int y, int button) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::mousePressed(int x, int y, int button) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::mouseReleased(int x, int y, int button) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::windowResized(int w, int h) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::gotMessage(ofMessage msg) {
-
 }
 
 //--------------------------------------------------------------
 void schwarmApp::dragEvent(ofDragInfo dragInfo) {
-
 }

@@ -37,11 +37,11 @@ public:
 	int loadImage(string filename, int stepSize, bool white = false);
 	int loadImage(ofImage & image, int stepSize, bool white = false);
 
-	void pixelsToParticles(SwarmParticleSystem * ps, bool notFree = false);
+	void pixelsToParticles(SwarmParticleSystem * ps, bool onlyActive = true);
 	void reuseDataSet(SwarmParticleSystem * ps, DataSet * reuseDataSet, int percent);
 
 	PixelData * getPixel(int idx){
-		if(idx >= pixels.size()){
+		if(idx >= (int)pixels.size()){
 			return NULL;
 		}
 		return pixels[idx];
