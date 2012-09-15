@@ -1,4 +1,4 @@
-smallSwarmExample/.*
-smallSwarmExample/obj/*
-smallSwarmExample/bin/libs/*
-smallSwarmExample/bin/small*
+contentSwarmExample/.*
+contentSwarmExample/obj/*
+contentSwarmExample/bin/libs/*
+contentSwarmExample/bin/small*
