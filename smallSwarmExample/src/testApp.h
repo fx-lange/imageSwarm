@@ -48,13 +48,6 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 
-	void useDataSet(DataSet & ds,float extraDataScale = 0,bool bNotFree = true) {
-		ds.pixelsToParticles(&ps,bNotFree);
-	}
-
-	void freeDataSet(DataSet & ds,int freeModulo = 1) {
-		ds.freeParticles(&ps,freeModulo);
-	}
 	/* GUI */
 	bool bHide;
 	string filename;
@@ -86,7 +79,7 @@ public:
 	int animationCounter;
 
 	//Scene 1
-	DataSet f1, f0a, f0b, f2, f3, f4, f5, f5a,f5b;
+	vector<DataSet> datasets;
 
 	/* 3D */
 	ofEasyCam cam;

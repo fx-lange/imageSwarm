@@ -1,22 +1,22 @@
 #include "testApp.h"
 
+bool compareFiles(ofFile lf,ofFile rf){
+	return lf.getFileName() <= rf.getFileName();
+}
+
 void schwarmApp::loadDataSets() {
-	//TODO forschleife?!
+	ofDirectory DIR("scene1");
+	DIR.listDir();
+	vector<ofFile> files = DIR.getFiles();
+	ofSort(files,compareFiles);
 	int loaded = 0;
-	loaded += f1.loadImage("scene1/1.png", 3, true);
-	f1.translateOrigins(sceneOffset, sceneOffset);
-	loaded += f2.loadImage("scene1/2.png", 3, true);
-	f2.translateOrigins(sceneOffset, sceneOffset);
-	loaded += f3.loadImage("scene1/3.png", 3, true);
-	f3.translateOrigins(sceneOffset, sceneOffset);
-	loaded += f4.loadImage("scene1/4.png", 3, true);
-	f4.translateOrigins(sceneOffset, sceneOffset);
-	loaded += f5.loadImage("scene1/5.png", 3, true);
-	f5.translateOrigins(sceneOffset, sceneOffset);
-	loaded += f5a.loadImage("scene1/6.png", 3, true);
-	f5a.translateOrigins(sceneOffset, sceneOffset);
-	loaded += f5b.loadImage("scene1/7.png", 3, true);
-	f5b.translateOrigins(sceneOffset, sceneOffset);
+	for(int i=0;i<(int)files.size();++i){
+		DataSet ds;
+		loaded += ds.loadImage(files[i].getAbsolutePath(),3,true);
+		ds.translateOrigins(sceneOffset, sceneOffset);
+		datasets.push_back(ds);
+	}
+	ofLog(OF_LOG_NOTICE,ofToString(loaded) + " points loaded");
 }
 
 void schwarmApp::addParticles(int amount, bool active) {
@@ -40,8 +40,9 @@ void schwarmApp::addParticles(int amount, bool active) {
 //--------------------------------------------------------------
 void schwarmApp::setup() {
 	ofSetFrameRate(30);
+	ofSetLogLevel(OF_LOG_VERBOSE);
 
-//fast settings
+//settings
 	animationCounter = 1; //change to start at a later point in the scene
 
 	scene.width = 475;
@@ -253,35 +254,38 @@ void schwarmApp::exit() {
 
 
 void schwarmApp::playScene1() {
+	//hard coded animation
+
 	switch (animationCounter) {
 	case 1:
-		useDataSet(f1);
+		datasets[0].pixelsToParticles(&ps); //1
 		break;
 	case 2:
-		freeDataSet(f1);
-		useDataSet(f2);
+		datasets[0].freeParticles(&ps);
+		datasets[1].pixelsToParticles(&ps); //2
 
 		break;
 	case 3:
-		freeDataSet(f2);
-		useDataSet(f3);
+		datasets[1].freeParticles(&ps);
+		datasets[2].pixelsToParticles(&ps); //3
 		break;
 	case 4:
-		freeDataSet(f3);
-		f4.reuseDataSet(&ps,&f3,50);
+		datasets[2].freeParticles(&ps);
+		datasets[3].reuseDataSet(&ps,&datasets[2],50); //made with
 		break;
 	case 5:
-		useDataSet(f5);
-		useDataSet(f5a);
+		datasets[4].pixelsToParticles(&ps); //open
+		datasets[5].pixelsToParticles(&ps); //source
 		break;
 	case 6:
-		freeDataSet(f5a);
-		f5b.reuseDataSet(&ps,&f5a,40);
+		datasets[5].freeParticles(&ps);
+		datasets[6].reuseDataSet(&ps,&datasets[5],40); //frameworks
 		break;
 	case 7:
-		freeDataSet(f5);
-		freeDataSet(f5b);
-		freeDataSet(f4);
+		//free all
+		datasets[3].freeParticles(&ps);
+		datasets[4].freeParticles(&ps);
+		datasets[6].freeParticles(&ps);
 		animationCounter = 0;
 		break;
 

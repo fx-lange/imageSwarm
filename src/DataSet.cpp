@@ -53,9 +53,9 @@ int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 	return loaded;
 }
 
-void DataSet::pixelsToParticles(SwarmParticleSystem * ps, bool notFree) {
+void DataSet::pixelsToParticles(SwarmParticleSystem * ps, bool onlyActive) {
 	for (int i = 0; i < size(); ++i) {
-		SwarmParticle * swarmParticle = ps->getNextUnused(notFree);
+		SwarmParticle * swarmParticle = ps->getNextUnused(onlyActive);
 		PixelData * p = pixels[i];
 		swarmParticle->origin.set(p->x, p->y, 0);
 		swarmParticle->state = PARTICLE_ORIGIN;
