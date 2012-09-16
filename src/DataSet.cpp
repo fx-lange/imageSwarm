@@ -57,14 +57,14 @@ int DataSet::loadText(string font,int size,string text,int stepSize){
 	ofTrueTypeFont ttf;
 	ttf.loadFont(font,size,true,true,true);
 	paths = ttf.getStringAsPoints(text);
-	fontBB = ttf.getStringBoundingBox(text,0,0);
+	boundingBox = ttf.getStringBoundingBox(text,0,0);
 
 	return findPointsToText(stepSize);
 }
 
 int DataSet::findPointsToText(int stepSize){
 	vector<vector <ofPoint> > lines;
-	for(int y=-fontBB.height;y<fontBB.height;y+=stepSize){
+	for(int y=-boundingBox.height;y<boundingBox.height;y+=stepSize){
 		float lineY = y;
 		vector<ofPoint> points;
 		findSortedIntersectionsY(paths,points,lineY,stepSize);
@@ -269,7 +269,10 @@ void DataSet::scaleOrigins(float scaleX, float scaleY) {
 	boundingBox.height *= scaleY;
 }
 
-void DataSet::translateOrigins(float transX, float transY, float transZ) {
+void DataSet::translateOrigins(float transX, float transY, float transZ,bool bCentered) {
+	if(bCentered){
+		transX -= boundingBox.width / 2;
+	}
 	for (int i = 0; i < size(); ++i) {
 		PixelData * p = pixels[i];
 		p->x += transX;

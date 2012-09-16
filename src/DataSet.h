@@ -27,7 +27,6 @@ protected:
 
 	//TODO <revisit this - what to save and what to recalc easy (example online typing)
 	vector<ofTTFCharacter> paths;
-	ofRectangle fontBB;
 
 	static bool xCoordCompare(const ofPoint&lp, const ofPoint&rp){
 		return lp.x<=rp.x;
@@ -64,7 +63,7 @@ public:
 	void checkBorders(SwarmParticleSystem * ps, float minX, float minY, float maxX, float maxY);
 	void setOriginForceActive(bool active);
 	void scaleOrigins(float scaleX, float scaleY);
-	void translateOrigins(float transX, float transY, float transZ = 0);
+	void translateOrigins(float transX, float transY, float transZ = 0, bool bCentered = false);
 	void moveOriginsBBSize(DataSet & other, float leftright, float updown,
 			float offSetX = 0, float offSetY = 0);
 	void scaleOriginsFromCenter(float scaleX, float scaleY);
