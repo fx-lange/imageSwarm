@@ -267,7 +267,7 @@ void schwarmApp::playScene1() {
 
 	switch (animationCounter) {
 	case 0:
-		datasets[7].pixelsToParticles(&ps); //hallo
+		datasets[7].pixelsToParticles(&ps); //spta.de
 		break;
 	case 1:
 		datasets[0].pixelsToParticles(&ps); //1
