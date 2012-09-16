@@ -53,6 +53,115 @@ int DataSet::loadImage(ofImage & image, int stepSize, bool white) {
 	return loaded;
 }
 
+int DataSet::loadText(string font,int size,string text,int stepSize){
+	ofTrueTypeFont ttf;
+	ttf.loadFont(font,size,true,true,true);
+	paths = ttf.getStringAsPoints(text);
+	fontBB = ttf.getStringBoundingBox(text,0,0);
+
+	return findPointsToText(stepSize);
+}
+
+int DataSet::findPointsToText(int stepSize){
+	vector<vector <ofPoint> > lines;
+	for(int y=-fontBB.height;y<fontBB.height;y+=stepSize){
+		float lineY = y;
+		vector<ofPoint> points;
+		findSortedIntersectionsY(paths,points,lineY,stepSize);
+		lines.push_back(points);
+	}
+
+//	add inside points
+	pixels.clear();
+	for(int i=0;i<(int)lines.size();++i){// for each line ..
+		vector<ofPoint> & points = lines[i];
+		for(int j=0;j<(int)points.size()-1;j+=2){// for each even point
+			// ... insert points between the even and next one!
+			float diff = points[j+1].x - points[j].x;
+			int steps = ceil(diff / (float)stepSize);
+			float tmpStepSize = diff / (float)steps;
+
+			for(int k=1;k<steps;++k){
+				PixelData * p = new PixelData();
+				p->x = (float)k*tmpStepSize+points[j].x;
+				p->y = points[j].y;
+				p->c = ofColor(255,255,255);
+				pixels.push_back(p);
+			}
+		}
+	}
+
+//	add outline points
+	for(int pi=0;pi<(int)paths.size() ;++pi){//for each path...
+			vector<ofPolyline> & lines = paths[pi].getOutline();
+
+			for (int li = 0; li < (int)lines.size(); ++li) {//for each outline...
+				vector<ofPoint> & line = lines[li].getVertices();
+				addOutline(line,stepSize);
+			}
+	}
+
+	cout << pixels.size() << endl;
+	return pixels.size();
+}
+
+void DataSet::findSortedIntersectionsY(vector<ofTTFCharacter> & paths,vector<ofPoint> & dest,float lineY,int stepSize){
+
+	for(int pi=0;pi<(int)paths.size() ;++pi){//for each path...
+		vector<ofPolyline> & lines = paths[pi].getOutline();
+
+		for (int li = 0; li < (int)lines.size(); ++li) {//for each outline...
+			vector<ofPoint> & line = lines[li].getVertices();
+			ofPoint * lp = &line[line.size()-1];
+			ofPoint * ap;
+
+			for(int i=0;i<(int)line.size();++i){//for each neighbor pair...
+				ap = &line[i];
+
+				if( (ap->y< lineY && lp->y>= lineY)	|| (lp->y< lineY && ap->y>=lineY)){//check for intersection!
+					float intersectionX = ap->x +  (lineY-ap->y)/(lp->y-ap->y) *(lp->x-ap->x);
+					dest.push_back(ofVec3f(intersectionX, lineY));
+				}
+				lp = ap;
+			}
+
+		}
+	}
+
+	//sort intersections
+	sort(dest.begin(),dest.end(),xCoordCompare);
+
+}
+
+void DataSet::addOutline(vector<ofPoint> & outline, float maxDistance){
+	float tmpStepSize = maxDistance;
+	int size = outline.size();
+	int idx = -1;
+	ofPoint point = outline[size-1];
+	while(idx<size-1){
+		while(idx<size-1){
+			ofVec3f & next = outline[idx+1];
+
+			float distance = point.distance(next);
+			if(distance > tmpStepSize){
+				point = (next-point).getNormalized()*tmpStepSize + point;
+				PixelData * p = new PixelData();
+				p->x = point.x;
+				p->y = point.y;
+				p->c = ofColor(255,255,255);
+				pixels.push_back(p);
+				tmpStepSize = maxDistance;
+				break;
+			}else{
+				point = next;
+				tmpStepSize -= distance;
+				idx++;
+			}
+		}
+	}
+
+}
+
 void DataSet::pixelsToParticles(SwarmParticleSystem * ps, bool onlyActive) {
 	for (int i = 0; i < size(); ++i) {
 		SwarmParticle * swarmParticle = ps->getNextUnused(onlyActive);

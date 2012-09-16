@@ -25,6 +25,16 @@ protected:
 	int loaded;
 	int isInUse;
 
+	vector<ofTTFCharacter> paths;
+	ofRectangle fontBB;
+
+	bool xCoordCompare(const ofPoint&lp, const ofPoint&rp){
+		return lp.x<=rp.x;
+	}
+
+	void findSortedIntersectionsY(vector<ofTTFCharacter> & paths,vector<ofPoint> & dest,float lineY,int stepSize);
+	void addOutline(vector<ofPoint> & outline,float maxDistance);
+
 public:
 	DataSet();
 
@@ -36,6 +46,9 @@ public:
 
 	int loadImage(string filename, int stepSize, bool white = false);
 	int loadImage(ofImage & image, int stepSize, bool white = false);
+
+	int loadText(string font,int size,string text,int stepSize);
+	int findPointsToText(int stepSize);
 
 	void pixelsToParticles(SwarmParticleSystem * ps, bool onlyActive = true);
 	void reuseDataSet(SwarmParticleSystem * ps, DataSet * reuseDataSet, int percent);
