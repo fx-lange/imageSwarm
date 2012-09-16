@@ -101,7 +101,8 @@ public:
 
 	float radius;
 	float alpha;
-	float maxSpeed;
+	float maxSpeed; //TODO wrong naming - it's more something like forceFraction - don't know...
+	float speedLimit;
 	float maxForce;
 
 	float separatorForce;

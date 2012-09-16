@@ -10,6 +10,7 @@ SwarmParticle::SwarmParticle(float _x, float _y, float _xv, float _yv) :
 	vel.set(_xv, _yv);
 	state = PARTICLE_ZLAYER;
 	bUsed = false;
+	speedLimit = 10.0f;
 }
 
 void SwarmParticle::setActive(bool active, bool moveZ) {
@@ -89,6 +90,7 @@ void SwarmParticle::updatePosition(float timeStep) {
 		return;
 	// f = ma, m = 1, f = a, v = int(a)
 	vel += acc;
+	vel.limit(speedLimit);
 	x += vel.x * timeStep;
 	y += vel.y * timeStep;
 	z += vel.z * timeStep;

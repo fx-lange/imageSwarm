@@ -289,9 +289,6 @@ void DataSet::translateOrigins(float transX, float transY, float transZ,bool bCe
 
 void DataSet::moveOriginsBBSize(DataSet & other, float leftright, float updown,
 		float offSetX, float offSetY) {
-	if (!isInUse) {
-		return;
-	}
 	float transX = leftright * other.boundingBox.width
 			+ ofSign(leftright) * offSetX;
 	float transY = updown * other.boundingBox.height + ofSign(updown) * offSetY;
