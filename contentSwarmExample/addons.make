@@ -1,3 +1,4 @@
 imageSwarm
 ofxXmlSettings
 ofxGui
+#ofxVideoRecorder

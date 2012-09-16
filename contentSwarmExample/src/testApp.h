@@ -1,10 +1,16 @@
 #pragma once
 
+//#define RECORD_VIDEO //uncomment to record videos with ofxVideoRecorder (linux only - available on github.com)
+
 #include "ofMain.h"
 
 #include "ParticleSystem.h"
 #include "DataSet.h"
 #include "ofxGui.h"
+
+#ifdef RECORD_VIDEO
+#include "ofxVideoRecorder.h"
+#endif
 
 class SwarmSettings {
 public:
@@ -86,5 +92,11 @@ public:
 	bool bUseShader;
 	ofShader dofShader;
 	ofFbo fbo;
+
+#ifdef RECORD_VIDEO
+	ofxVideoRecorder videoRecorder;
+	bool bRecord, bHasRecorded;
+	ofImage videoFrame;
+#endif
 };
 
