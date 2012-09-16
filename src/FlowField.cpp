@@ -67,7 +67,6 @@ void FlowField::display() {
 // Renders a vector object 'v' as an arrow and a location 'x,y'
 void FlowField::drawVector(ofVec3f v, float x, float y, float z, float scale) {
 	ofPushMatrix();
-	float arrowsize = 4;
 	// Translate to location to render vector
 	ofTranslate(x, y,z);
 	ofSetColor(100,100,100,50);

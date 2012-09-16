@@ -243,7 +243,7 @@ ofVec3f SwarmParticle::separate(vector<SwarmParticle*> & boids) {
 	ofVec3f steer(0, 0, 0);
 	int count = 0;
 	// For every boid in the system, check if it's too close
-	for (int i = 0; i < boids.size(); i++) {
+	for (int i = 0; i < (int)boids.size(); i++) {
 		if(!boids[i]->isActive())
 			continue;
 		ofVec3f * other = boids[i];
@@ -282,7 +282,7 @@ ofVec3f SwarmParticle::align(vector<SwarmParticle*> & boids) {
 	float neighbordist = 25.0; //TODO gui
 	ofVec3f steer(0, 0, 0);
 	int count = 0;
-	for (int i = 0; i < boids.size(); i++) {
+	for (int i = 0; i < (int)boids.size(); i++) {
 		if(!boids[i]->isActive())
 				continue;
 		SwarmParticle * other = boids[i];
