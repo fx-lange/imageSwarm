@@ -17,6 +17,12 @@ void schwarmApp::loadDataSets() {
 		datasets.push_back(ds);
 	}
 	ofLog(OF_LOG_NOTICE,ofToString(loaded) + " points loaded");
+	DataSet ds;
+	loaded += ds.loadText("verdana.ttf",30,"spta.de",3);
+	ds.translateOrigins(sceneOffset, sceneOffset+50);
+	datasets.push_back(ds);
+
+	ofLog(OF_LOG_NOTICE,ofToString(loaded) + " points loaded");
 }
 
 void schwarmApp::addParticles(int amount, bool active) {
@@ -43,7 +49,7 @@ void schwarmApp::setup() {
 	ofSetLogLevel(OF_LOG_VERBOSE);
 
 //settings
-	animationCounter = 1; //change to start at a later point in the scene
+	animationCounter = 0; //change to start at a later point in the scene
 
 	scene.width = 475;
 	scene.height = 340;
@@ -260,6 +266,9 @@ void schwarmApp::playScene1() {
 	//hard coded animation
 
 	switch (animationCounter) {
+	case 0:
+		datasets[7].pixelsToParticles(&ps); //hallo
+		break;
 	case 1:
 		datasets[0].pixelsToParticles(&ps); //1
 		break;
