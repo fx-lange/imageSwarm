@@ -1,5 +1,4 @@
-ofxOpenCv
 imageSwarm
 ofxXmlSettings
 ofxGui
-ofxVideoRecorder
+#ofxVideoRecorder

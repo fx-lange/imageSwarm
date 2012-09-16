@@ -80,6 +80,13 @@ void schwarmApp::setup() {
 	addParticles(1 * 1000, true);
 
 	setupGui();
+
+#ifdef RECORD_VIDEO
+	videoRecorder.setup("testMovie.mov", scene.width*2, scene.height*2, 30, JPEG_QUALITYSUPERB);
+	videoFrame.allocate(scene.width*2, scene.height*2, OF_IMAGE_COLOR);
+	bRecord = false;
+	bHasRecorded = false;
+#endif
 }
 
 void schwarmApp::setupGui() {
@@ -189,6 +196,13 @@ void schwarmApp::update() {
 	}
 
 	ps.update();
+
+#ifdef RECORD_VIDEO
+	if (bRecord) {
+		videoFrame.grabScreen(0, 0, scene.width*2, scene.height*2);
+		videoRecorder.addFrame(videoFrame.getPixelsRef());
+	}
+#endif
 }
 //--------------------------------------------------------------
 void schwarmApp::draw() {
@@ -259,6 +273,10 @@ void schwarmApp::draw() {
 }
 
 void schwarmApp::exit() {
+#ifdef RECORD_VIDEO
+	if (bHasRecorded)
+		videoRecorder.encodeVideo();
+#endif
 }
 
 
@@ -317,6 +335,15 @@ void schwarmApp::keyPressed(int key) {
 	case ' ':
 		playScene1();
 		break;
+#ifdef RECORD_VIDEO
+	case 'r':
+		bRecord = !bRecord;
+		if (bRecord) {
+			bHasRecorded = true;
+			ofHideCursor();
+		}
+		break;
+#endif
 	}
 }
 
