@@ -57,17 +57,16 @@ SwarmParticle * SwarmParticleSystem::getNextFree() { //TODO needed anymore?
  *
  */
 SwarmParticle * SwarmParticleSystem::getNextUnused(bool onlyActive) { //rename to getNextFree
-	if(onlyActive && nActive == nUsed){
+	if(onlyActive && nActive <= nUsed){
 		onlyActive = false; //cause no more unfree and unused left //TODO naming!
 	}
 
 	SwarmParticle * p = particles[index];
 	index = (index + 1) % (particles.size());
 	while (p->isUsed() || ( onlyActive && !p->isActive())) {
-		p = particles[index];
 		index = (index + 1) % (particles.size());
+		p = particles[index];
 	}
-	p->setUsed(true);
 	setParticleUsed(p);
 	return p;
 }

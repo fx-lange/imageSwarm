@@ -190,7 +190,8 @@ public:
 		if (z < minZ || z > maxZ)
 			vel.z *= -1;
 
-		checkOrigin(minX, minY, maxX, maxY, minZ, maxZ);
+//		checkOrigin(minX, minY, maxX, maxY, minZ, maxZ);
+		//TODO check is by the system checkBorders?!
 
 		//durchfluss
 //	    if (x < minX) x = maxX;
