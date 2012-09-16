@@ -2,11 +2,9 @@
 
 #include "ofMain.h"
 
-#include "ofxOpenCv.h"
 #include "ParticleSystem.h"
 #include "DataSet.h"
 #include "ofxGui.h"
-#include "ofxVideoRecorder.h"
 
 class SwarmSettings {
 public:
