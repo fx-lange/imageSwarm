@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "DataSet.h"
 
 using namespace std;
 
@@ -22,10 +23,9 @@ class fillPolyTest : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 		string test;
-		ofTrueTypeFont font;
-		vector<ofTTFCharacter> paths;
-		vector<vector<ofPoint> > lines;
-		vector<ofPoint> formPoints;
+
+		DataSet ds;
+
 
 		int stepSize;
 };

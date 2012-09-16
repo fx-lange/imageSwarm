@@ -25,10 +25,11 @@ protected:
 	int loaded;
 	int isInUse;
 
+	//TODO <revisit this - what to save and what to recalc easy (example online typing)
 	vector<ofTTFCharacter> paths;
 	ofRectangle fontBB;
 
-	bool xCoordCompare(const ofPoint&lp, const ofPoint&rp){
+	static bool xCoordCompare(const ofPoint&lp, const ofPoint&rp){
 		return lp.x<=rp.x;
 	}
 

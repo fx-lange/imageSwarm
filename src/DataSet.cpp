@@ -129,7 +129,7 @@ void DataSet::findSortedIntersectionsY(vector<ofTTFCharacter> & paths,vector<ofP
 	}
 
 	//sort intersections
-	sort(dest.begin(),dest.end(),xCoordCompare);
+	sort(dest.begin(),dest.end(),DataSet::xCoordCompare);
 
 }
 
