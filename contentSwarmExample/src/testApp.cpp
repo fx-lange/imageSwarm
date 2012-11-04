@@ -39,7 +39,7 @@ void schwarmApp::addParticles(int amount, bool active) {
 
 //--------------------------------------------------------------
 void schwarmApp::setup() {
-	ofSetFrameRate(30);
+//	ofSetFrameRate(30);
 	ofSetLogLevel(OF_LOG_VERBOSE);
 
 //settings

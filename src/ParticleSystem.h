@@ -2,6 +2,7 @@
 
 #include "Particle.h"
 #include "FlowField.h"
+#include "SlowParticle.h"
 
 #define USE_INVSQRT
 
@@ -59,3 +60,5 @@ public:
 
 	void freeAllParticles();
 };
+
+
