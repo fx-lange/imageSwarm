@@ -77,7 +77,7 @@ void SwarmParticle::addOriginForce(float scale) {
 			acc.y += yd;
 			acc.z += zd;
 		}else if(state == PARTICLE_ZLAYER){
-			float effect = length * zForce;
+			float effect = length * settings->zForce;
 			zd *= effect;
 			acc.z += zd;
 		}
@@ -116,7 +116,7 @@ void SwarmParticle::follow(FlowField f) {
 	// What is the vector at that spot in the flow field?
 	ofVec3f desired = f.lookup(lookup);
 	// Scale it up by maxspeed
-	desired.scale(maxSpeed);
+	desired.scale(settings->maxSpeed);
 	// Steering is desired minus velocity
 //	    PVector steer = PVector.sub(desired, vel);
 	desired -= vel;
@@ -135,9 +135,9 @@ void SwarmParticle::oldflock(vector<SwarmParticle*> & boids) {
 
 	// Arbitrarily weight these forces
 	float scatter = ofRandom(0.0);
-	sep *= (separatorForce + scatter);
-	ali *= (alignForce + scatter);
-	cohesionSteer *= (cohesionForce + scatter);
+	sep *= (settings->separatorForce + scatter);
+	ali *= (settings->alignForce + scatter);
+	cohesionSteer *= (settings->cohesionForce + scatter);
 
 	// Add the force vectors to acceleration
 	acc += sep;
@@ -167,13 +167,13 @@ void SwarmParticle::flock(vector<SwarmParticle*> & boids){
 
 		if(d>0){
 			//cohesion
-			if (d < cohesionRange) {
+			if (d < settings->cohesionRange) {
 				cohesionSum += *other; // Add location
 				countCohesion++;
 			}
 
 			//separate
-			if (d < desiredSeparation) {
+			if (d < settings->desiredSeparation) {
 				// Calculate vector pointing away from neighbor
 				ofVec3f diff = *this - *other;
 				fastNormalize(diff);
@@ -183,7 +183,7 @@ void SwarmParticle::flock(vector<SwarmParticle*> & boids){
 			}
 
 			//align
-			if (d < alignRange) {
+			if (d < settings->alignRange) {
 				align += other->vel;
 				countAlign++;
 			}
@@ -200,9 +200,9 @@ void SwarmParticle::flock(vector<SwarmParticle*> & boids){
 		if (sepLength > 0) {
 			// Implement Reynolds: Steering = Desired - Velocity
 			fastNormalize(sep,sepLength);
-			sep *= maxSpeed;
+			sep *= settings->maxSpeed;
 			sep -= vel;
-			fastLimit(sep,maxForce);
+			fastLimit(sep,settings->maxForce);
 		}
 
 	//cohesion
@@ -220,15 +220,15 @@ void SwarmParticle::flock(vector<SwarmParticle*> & boids){
 		if (alignLength > 0) {
 			// Implement Reynolds: Steering = Desired - Velocity
 			fastNormalize(align,alignLength);
-			align *= maxSpeed;
+			align *= settings->maxSpeed;
 			align -= vel;
-			fastLimit(align,maxForce);
+			fastLimit(align,settings->maxForce);
 		}
 
 	float scatter = ofRandom(0.0);
-	sep *= (separatorForce + scatter);
-	align *= (alignForce + scatter);
-	cohesionSteer *= (cohesionForce + scatter);
+	sep *= (settings->separatorForce + scatter);
+	align *= (settings->alignForce + scatter);
+	cohesionSteer *= (settings->cohesionForce + scatter);
 
 	// Add the force vectors to acceleration
 	acc += sep;
@@ -269,9 +269,9 @@ ofVec3f SwarmParticle::separate(vector<SwarmParticle*> & boids) {
 	if (steerLength > 0) {
 		// Implement Reynolds: Steering = Desired - Velocity
 		fastNormalize(steer,steerLength);
-		steer *= maxSpeed;
+		steer *= settings->maxSpeed;
 		steer -= vel;
-		fastLimit(steer,maxForce);
+		fastLimit(steer,settings->maxForce);
 	}
 	return steer;
 }
@@ -301,9 +301,9 @@ ofVec3f SwarmParticle::align(vector<SwarmParticle*> & boids) {
 	if (steerLength > 0) {
 		// Implement Reynolds: Steering = Desired - Velocity
 		fastNormalize(steer,steerLength);
-		steer *= maxSpeed;
+		steer *= settings->maxSpeed;
 		steer -= vel;
-		fastLimit(steer,maxForce);
+		fastLimit(steer,settings->maxForce);
 	}
 	return steer;
 }
@@ -343,12 +343,12 @@ ofVec3f SwarmParticle::steer(ofVec3f target, bool slowdown) {
 		fastNormalize(desired,d);
 		// Two options for desired vector magnitude (1 -- based on distance, 2 -- maxspeed)
 		if ((slowdown) && (d < 100.0))
-			desired *= (maxSpeed * (d / 100.0)); // This damping is somewhat arbitrary
+			desired *= (settings->maxSpeed * (d / 100.0)); // This damping is somewhat arbitrary
 		else
-			desired *= maxSpeed;
+			desired *= settings->maxSpeed;
 		// Steering = Desired minus PVectorVelocity
 		steer = desired - vel;
-		fastLimit(steer,maxForce); //TODO Limit to maximum steering force
+		fastLimit(steer,settings->maxForce); //TODO Limit to maximum steering force
 	} else {
 		steer.set(0, 0, 0);
 	}

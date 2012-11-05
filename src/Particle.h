@@ -4,6 +4,7 @@
 #include "ofGraphics.h"
 #include "ofPoint.h"
 #include "FlowField.h"
+#include "SwarmGui.h"
 
 /** TODO
  * 3D boundingBox
@@ -101,17 +102,10 @@ public:
 
 	float radius;
 	float alpha;
-	float maxSpeed;
-	float maxForce;
+//	float maxSpeed;
+//	float maxForce;
 
-	float separatorForce;
-	float alignForce;
-	float cohesionForce;
-	float desiredSeparation;
-	float alignRange;
-	float cohesionRange;
-
-	float zForce;
+	SwarmSettings * settings;
 
 	particleState state;
 
