@@ -16,6 +16,8 @@ struct SwarmSettings {
 	ofxFloatSlider cohesionRange;
 	ofxFloatSlider maxForce;
 	ofxFloatSlider zForce;
+	ofxFloatSlider slowForce;
+	ofxFloatSlider slowReset;
 };
 
 struct SwarmGui {

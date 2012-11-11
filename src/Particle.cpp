@@ -10,6 +10,7 @@ SwarmParticle::SwarmParticle(float _x, float _y, float _xv, float _yv) :
 	vel.set(_xv, _yv);
 	state = PARTICLE_ZLAYER;
 	bUsed = false;
+	bKillSoft = false;
 }
 
 void SwarmParticle::setActive(bool active, bool moveZ) {
@@ -17,6 +18,7 @@ void SwarmParticle::setActive(bool active, bool moveZ) {
 	if (bActive) {
 		bIgnoreForce = false;
 		alpha = 255;
+		c = oldC;
 //		z = 0;
 	} else {
 		alpha = 0;
@@ -84,6 +86,35 @@ void SwarmParticle::addOriginForce(float scale) {
 	}
 }
 
+void SwarmParticle::borders(float minX, float minY, float maxX, float maxY, float minZ,
+		float maxZ) {
+	if(x < minX){
+		x = minX;
+		vel.x *= -1.f;
+	}else if(x>maxX){
+		x = maxX;
+		vel.x *= -1.f;
+	}
+
+	if (y < minY){
+		vel.y *= -1;
+		y = minY;
+	}else if(y > maxY){
+		vel.y *= -1;
+		y = maxY;
+	}
+
+	if (z < minZ){
+		vel.z *= -1;
+		z = minZ;
+	}else if(z > maxZ){
+		vel.z *= -1;
+		z = maxZ;
+	}
+
+	checkOrigin(minX, minY, maxX, maxY, minZ, maxZ);
+}
+
 void SwarmParticle::updatePosition(float timeStep) {
 	if (!bActive)
 		return;
@@ -92,7 +123,13 @@ void SwarmParticle::updatePosition(float timeStep) {
 	x += vel.x * timeStep;
 	y += vel.y * timeStep;
 	z += vel.z * timeStep;
+}
 
+void SwarmParticle::gravity(ofVec3f gravity) {
+	if (!bActive)
+		return;
+	// f = ma, m = 1, f = a, v = int(a)
+	vel += gravity;
 }
 
 void SwarmParticle::resetForce() {

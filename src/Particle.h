@@ -95,7 +95,7 @@ typedef enum {
 class SwarmParticle: public ofPoint {
 
 public:
-	ofColor c;
+	ofColor c, oldC; //has to be handled intern
 	ofVec3f vel;
 	ofVec3f acc;
 	ofPoint origin;
@@ -175,31 +175,12 @@ public:
 	}
 
 	// Wraparound
-	void borders(float minX, float minY, float maxX, float maxY, float minZ,
-			float maxZ) {
-		if (x < minX || x > maxX)
-			vel.x *= -1;
-		if (y < minY || y > maxY)
-			vel.y *= -1;
-		if (z < minZ || z > maxZ)
-			vel.z *= -1;
-
-		checkOrigin(minX, minY, maxX, maxY, minZ, maxZ);
-
-		//durchfluss
-//	    if (x < minX) x = maxX;
-//	    if (y < minY) y = maxY;
-//	    if (x > maxX) x = minX;
-//	    if (y > maxY) y = minY;
-////	    if (z < minZ) vel.z *= -1;
-////	    if (z > maxZ) vel.z *= -1;
-//		if (z < minZ) z = maxZ;
-//		if (z > maxZ) z = minZ;
-	}
+	void borders(float minX, float minY, float maxX, float maxY, float minZ, float maxZ);
 
 	virtual void updatePosition(float timeStep);
+	virtual void gravity(ofVec3f gravity);
 
-	void resetForce();
+	virtual void resetForce();
 
 	void addDampingForce(float damping = .01);
 

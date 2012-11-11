@@ -7,7 +7,7 @@
 
 #include "SlowParticleSystem.h"
 
-void SlowParticleSystem::addSlow(float targetX, float targetY, float targetZ, float radius, float force){
+void SlowParticleSystem::addSlow(float targetX, float targetY, float targetZ, float radius){
 	float minX = targetX - radius;
 	float minY = targetY - radius;
 	float maxX = targetX + radius;
@@ -39,13 +39,13 @@ void SlowParticleSystem::addSlow(float targetX, float targetY, float targetZ, fl
 			vector<SwarmParticle*>& curBin = bins[y * xBins + x];
 			int n = curBin.size();
 			for (int i = 0; i < n; i++) {
-				SwarmParticle& curParticle = *(curBin[i]);
-				if ( curParticle.ignoresForces()) {
+				SlowParticle * curParticle = (SlowParticle*)curBin[i];
+				if ( curParticle->ignoresForces()) {
 					continue;
 				}
-				xd = curParticle.x - targetX;
-				yd = curParticle.y - targetY;
-				zd = curParticle.z - targetZ;
+				xd = curParticle->x - targetX;
+				yd = curParticle->y - targetY;
+				zd = curParticle->z - targetZ;
 				length = xd * xd + yd * yd + zd * zd;
 				if (length > 0 && length < maxrsq * 2) {
 #ifdef DRAW_FORCES
@@ -54,8 +54,7 @@ void SlowParticleSystem::addSlow(float targetX, float targetY, float targetZ, fl
 #endif
 				}
 				if (length > 0 && length < maxrsq) {
-					//TODO add slow
-					TODO
+					curParticle->slowMe();
 				}
 			}
 		}

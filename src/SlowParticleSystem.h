@@ -12,7 +12,7 @@
 
 class SlowParticleSystem : public SwarmParticleSystem{
 public:
-	void addSlow(float x, float y, float z, float radius, float force);
+	void addSlow(float x, float y, float z, float radius);
 };
 
 #endif /* SLOWPARTICLESYSTEM_H_ */
